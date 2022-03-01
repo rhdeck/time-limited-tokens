@@ -1,0 +1,33 @@
+{
+  "name": "temporary-nft",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Monorepo for Temporary NFT Library",
+  "scripts": {
+    "pre-commit": "(git-branch-is --not main || (set -u && echo $ALLOWMAIN)) && yarn test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhdeck/temporary-nft.git"
+  },
+  "contributors": [
+    "Naiyoma Aurelia",
+    "Ray Deck",
+    "Akshay Rakheja",
+    "Robert Reinhart",
+    "Radek Senkiewicz"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhdeck/tenporary-nft/issues"
+  },
+  "homepage": "https://github.com/rhdeck/temporary-nft#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^9.1.1",
+    "@commitlint/config-conventional": "^9.1.1",
+    "@types/node": "^14.14.17",
+    "git-branch-is": "^4.0.0",
+    "husky": "^4.3.6",
+    "validate-npm-package-name": "^3.0.0"
+  }
+}
