@@ -1,0 +1,18 @@
+{
+  "name": "tnft-contracts",
+  "version": "1.0.0",
+  "description": "Contracts and ABI for T-NFT",
+  "main": "index.js",
+  "repository": "https://github.com/rhdeck/temporary-nft",
+  "contributors": [
+    "Naiyoma Aurelia",
+    "Ray Deck",
+    "Akshay Rakheja",
+    "Robert Reinhart",
+    "Radek Senkiewicz"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build:abi": "solc --abi ITemporalNFT.sol > ITemporalNFT-abi.json"
+  }
+}
