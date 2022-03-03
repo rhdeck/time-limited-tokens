@@ -44,6 +44,8 @@ interface IERC721Lease {
         address _addressTo
     ) external;
 
+    function getLeaseApproved(uint256 _tokenId) external view returns (address);
+
     function leaseFrom(
         address _addressFrom,
         address _addressTo,
@@ -57,4 +59,12 @@ interface IERC721Lease {
         uint256 _start,
         uint256 _end
     ) external;
+
+    //Uses message.sender as the authorizer
+    function setLeaseApprovalForAll(address _operator, bool _approved) external;
+
+    function isLeaseApprovedForall(address _owner, address _operator)
+        external
+        view
+        returns (bool);
 }
