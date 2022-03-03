@@ -51,6 +51,15 @@ interface IERC721Lease {
         address _addressTo,
         uint256 tokenId,
         uint256 _start,
+        uint256 _end,
+        bytes memory _data
+    ) external payable;
+
+    function leaseFrom(
+        address _addressFrom,
+        address _addressTo,
+        uint256 tokenId,
+        uint256 _start,
         uint256 _end
     ) external payable;
 
