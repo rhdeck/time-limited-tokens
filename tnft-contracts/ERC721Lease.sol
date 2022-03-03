@@ -7,9 +7,9 @@ import "./ITemporalNFT.sol";
 contract ERC721LeaseBase is IERC721Lease {
     //Properties
 
-    uint256 public constant MAX_LEASE_DURATION = 2880 * 60; // 60 days
-    uint256 public constant MIN_LEASE_DURATION = 2880; // 1 day in 30s blocks
-
+    uint256 public constant MAX_LEASE_DURATION = 60 days / 30; // 60 days
+    uint256 public constant MIN_LEASE_DURATION = 2880; // 1 day in 30s blocks, or 86400 for days
+    bool public constant USE_TIMESTAMP = false; // Use timestamp instead of block number
     // an array of tokens
     struct Term {
         address lessee;
@@ -80,9 +80,21 @@ contract ERC721LeaseBase is IERC721Lease {
         return term.endTime;
     }
 
+function getNow() internal view returns (uint256) {
+    if(USE_TIMESTAMP) {
+        return now;
+    } else {
+        return block.number;
+    }
+}
+
 function isLeaseAvailable(uint256 _tokenId, uint256 _start,
-        uint256 _end)  view returns (bool) {
-        
+        uint256 _end, uint _now)  view returns (bool) {
+        if(_now == 0) {
+            _now = getNow();
+        }
+        require( _end >= _start);
+        require (_start >= _now);
         uint256 thisBlock = _start;
       
         if(_start > lastEndTimeByToken[_tokenId]) {
