@@ -32,7 +32,6 @@ interface IERC721Lease {
     /// @param _tokenId is the tokenid of the asset for which lease is being approved
     /// @param _start is the start time for the lease approved
     /// @param _end is the end time for the lease approved
-
     event LeaseApproval(
         address indexed _from,
         address indexed _to,
@@ -52,16 +51,19 @@ interface IERC721Lease {
     );
 
     /// @notice This function returns the lessee of the tokenId
-    /// @params _tokenId is the tokenId for which are checking the lesseOf
-    /// @params _block is the block number for which we are checking who the lessee is
-
+    /// @param _tokenId is the tokenId for which are checking the lesseOf
+    /// @param _block is the block number for which we are checking who the lessee is
     function lesseeOf(uint256 _tokenId, uint256 _block)
         external
         view
         returns (address);
 
-    function returnBy(uint256 _tokenId) external view returns (uint256);
-
+    /// @notice This function is called when we are approving a lease for a tokenID for
+    /// a given time frame and for a given address
+    /// @param _tokenId is the token for which the lease will be approved
+    /// @param _start is the start time of the approved lease
+    /// @param _end is the end time of the approaved lease
+    /// @param _addressTo is the address to approve for the said lease
     function approveLease(
         uint256 _tokenId,
         uint256 _start,
@@ -69,8 +71,10 @@ interface IERC721Lease {
         address _addressTo
     ) external;
 
+    /// @notice Check again
     function getLeaseApproved(uint256 _tokenId) external view returns (address);
 
+    /// @notice
     function leaseFrom(
         address _addressFrom,
         address _addressTo,
