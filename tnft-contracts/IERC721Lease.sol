@@ -74,7 +74,13 @@ interface IERC721Lease {
     /// @notice Check again
     function getLeaseApproved(uint256 _tokenId) external view returns (address);
 
-    /// @notice
+    /// @notice This function transfers the lease from the owner/current lessee/_operator to another
+    /// address for a certain token for a given time frame
+    /// @param _addressFrom is the address assigning the lease
+    /// @param _addressTo is the address to which the lease is being assigned
+    /// @param _start is the start time of the lease
+    /// @param _end is the end time of the lease
+    /// @param _data Additional data with no specified format, sent in call to `_to`
     function leaseFrom(
         address _addressFrom,
         address _addressTo,
@@ -84,6 +90,12 @@ interface IERC721Lease {
         bytes memory _data
     ) external payable;
 
+    /// @notice transfers ownership of the lease from the current owner to a third party -- THE CALLER IS RESPONSIBLE
+    ////// TO CONFIRM THAT `_to` IS CAPABLE OF RECEIVING the lease
+    /// @param _addressFrom is the address assigning the lease
+    /// @param _addressTo is the address to which the lease is being assigned
+    /// @param _start is the start time of the lease
+    /// @param _end is the end time of the lease
     function leaseFrom(
         address _addressFrom,
         address _addressTo,
@@ -92,15 +104,28 @@ interface IERC721Lease {
         uint256 _end
     ) external payable;
 
+    /// @notice Unleases a lease for a token for  certain timeframe
+    /// @param _tokenId is the token for which the lease is being unleased
+    /// @param _start is the start time of the timeframe of the lease
+    /// @param _end is the end time of the timeframe of the lease
     function unlease(
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
     ) external;
 
-    //Uses message.sender as the authorizer
+    /// Uses message.sender as the authorizer
+    /// @notice Enable or disable approval for a third party ("operator") to manage
+    ///  all of `msg.sender`'s leases
+    /// @param _operator the address of a third party that can manage all the leases
+    /// on behalf of the owner
+    /// @param _approved True if the operator is approved, false to revoke approval
     function setLeaseApprovalForAll(address _operator, bool _approved) external;
 
+    /// This function checks if all the leases are approved
+    /// @param _owner is the address for whom to the lease belongs to
+    /// @param _operator the address of a third party that can manage all the leases
+    /// on behalf of the owner
     function isLeaseApprovedForall(address _owner, address _operator)
         external
         view
