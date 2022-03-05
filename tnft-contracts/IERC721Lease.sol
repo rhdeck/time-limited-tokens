@@ -86,13 +86,11 @@ interface IERC721Lease {
 
     /// @notice This function transfers the lease from the owner/current lessee/_operator to another
     /// address for a certain token for a given time frame
-    /// @param _addressFrom is the address assigning the lease
     /// @param _addressTo is the address to which the lease is being assigned
     /// @param _start is the start time of the lease
     /// @param _end is the end time of the lease
     /// @param _data Additional data with no specified format, sent in call to `_to`
-    function leaseFrom(
-        address _addressFrom,
+    function lease(
         address _addressTo,
         uint256 tokenId,
         uint256 _start,
@@ -102,12 +100,10 @@ interface IERC721Lease {
 
     /// @notice transfers ownership of the lease from the current owner to a third party -- THE CALLER IS RESPONSIBLE
     ////// TO CONFIRM THAT `_to` IS CAPABLE OF RECEIVING the lease
-    /// @param _addressFrom is the address assigning the lease
     /// @param _addressTo is the address to which the lease is being assigned
     /// @param _start is the start time of the lease
     /// @param _end is the end time of the lease
-    function leaseFrom(
-        address _addressFrom,
+    function lease(
         address _addressTo,
         uint256 tokenId,
         uint256 _start,
