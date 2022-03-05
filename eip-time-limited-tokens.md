@@ -24,17 +24,17 @@ However, ERC721 and related standards do not provide functionality to enable lea
 
 Allocating time-based rights in a standard that lets people know who possesses a given asset, as separate from ultimate ownership. The question is who has possession at a specific point in time. For example, the tenant/occupant of a flat can change between months or years, while ownership is indefinite. This standard looks at the question of allocating those rights, who one can allocate them from (e.g. subletting), and looking into the future to understand who will have those rights for making future use case decisions.
 
-# **Use Cases**
+## Use Cases
 
-## Electronic Apartment Lock - "Web3-n-B"
+### Electronic Apartment Lock - "Web3-n-B"
 
 People lease apartments from property owners. Sometimes, we want to re-lease access to that apartment to a third party, a la as an AirBnB host. We want to give access to the apartment to the sub-letter for a specific period of time, and the sub-letter should expect that they will have privacy, e.g. the original tenant does not intrude during this period. The tenant has a lease from the property owner that might last a year. The goal is to tell the apartment lock to allow that tenant access during their term, and to transfer that access to the subletter during their (shorter) stay. A blockchain-powered lock could grant access based on who has the rights to that apartment at that point in time. The contract will allow other sublet arrangements to happen, and because it is on the contract, everything is transparent to the original owner, along with the potential for payment to the original owner for the privilege of making these sublet arrangements. 
 
-## Blockchain-powered automobile ignition - "EthCar"
+### Blockchain-powered automobile ignition - "EthCar"
 
 Self-driving cars will be really expensive. Leasing them will probably be important for people to affordably get access. But we don’t need our car all the time. Leasing time windows to people for use of the vehicle will allow people to get access to the car (potentially even telling it to drive to one’s location) for a fixed period of time. All transactions for these rides would run on the chain, and if you get the ride to a location, and you do not need the ride until you are done, you can re-lease time on the vehicle to another lessee in a re-lease transaction. Now there is no wasted “downtime” on the vehicle. The vehicle gates access based on whether the current occupant’s address (e.g. msgSender) is the leaseholder at that point in time. 
 
-## Other potential use cases:
+### Other potential use cases:
 
 - Renting streaming media
 - Library books
