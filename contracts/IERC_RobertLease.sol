@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 /// @notice This interface describes all the events and functions that must
 /// be implemented in order to create a Time Limited Token
 
-interface IERC721Lease {
+interface IERC_RobertLease {
     /// --------NOT SURE WE NEED THIS ONE --------
     /// @dev This even is asserted when a new Asset is minted
     /// @param _from is the address that is minting the asset
@@ -121,12 +121,12 @@ interface IERC721Lease {
     /// @param _tokenId is the token for which the lease is being transferred
     /// @param _start is the start time of the lease
     /// @param _end is the end time of the lease
-    function transferLease(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        address _addressTo
-    ) external payable;
+    // function transferLease(
+    //     uint256 _tokenId,
+    //     uint256 _start,
+    //     uint256 _end,
+    //     address _addressTo
+    // ) external payable;
 
     /// @notice This function unleases a token for the duration specified
     /// @dev LeaseCancelled event is emitted
@@ -138,6 +138,14 @@ interface IERC721Lease {
         uint256 _start,
         uint256 _end
     ) external payable;
+
+    /// @notice This function returns the maximum lease duration set
+    /// @return Maximum lease duration
+    function MAX_LEASE_DURATION() external pure returns (uint256); // 60 days
+
+    /// @notice This function returns the minimum lease duration set
+    /// @return Minimum lease duration
+    function MIN_LEASE_DURATION() external pure returns (uint256); // 1 day in 30s blocks, or 86400 for days
 
     ///--------- FROM OTHER IERC for reference----------------
 
@@ -188,14 +196,14 @@ interface IERC721Lease {
     /// @param _start is the start time of the lease
     /// @param _end is the end time of the lease
     /// @param _data Additional data with no specified format, sent in call to `_to`
-    function leaseFrom(
-        address _addressFrom,
-        address _addressTo,
-        uint256 tokenId,
-        uint256 _start,
-        uint256 _end,
-        bytes memory _data
-    ) external payable;
+    // function leaseFrom(
+    //     address _addressFrom,
+    //     address _addressTo,
+    //     uint256 tokenId,
+    //     uint256 _start,
+    //     uint256 _end,
+    //     bytes memory _data
+    // ) external payable;
 
     /// @notice transfers ownership of the lease from the current owner to a third party -- THE CALLER IS RESPONSIBLE
     ////// TO CONFIRM THAT `_to` IS CAPABLE OF RECEIVING the lease
@@ -203,13 +211,13 @@ interface IERC721Lease {
     /// @param _addressTo is the address to which the lease is being assigned
     /// @param _start is the start time of the lease
     /// @param _end is the end time of the lease
-    function leaseFrom(
-        address _addressFrom,
-        address _addressTo,
-        uint256 tokenId,
-        uint256 _start,
-        uint256 _end
-    ) external payable;
+    // function leaseFrom(
+    //     address _addressFrom,
+    //     address _addressTo,
+    //     uint256 tokenId,
+    //     uint256 _start,
+    //     uint256 _end
+    // ) external payable;
 
     /// Uses message.sender as the authorizer
     /// @notice Enable or disable approval for a third party ("operator") to manage
@@ -227,4 +235,6 @@ interface IERC721Lease {
         external
         view
         returns (bool);
+
+    function USE_TIMESTAMP() external pure returns (bool); // Use timestamp instead of block number
 }
