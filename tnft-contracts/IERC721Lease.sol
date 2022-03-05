@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.0;
 
+/// @title Time Limited Tokens
+/// @notice This interface describes all the events and functions that must be implemented in order to create a
+/// Time Limited Token
 interface IERC721Lease {
     /// @dev This event is emitted when a new lease is assigned by any mechanism (leaseFrom, unlease, release)
     /// @param _tokenId of the asset

@@ -11,24 +11,24 @@ import "hardhat/console.sol";
 contract ERC721LeaseBase is ERC721URIStorage {
     constructor() ERC721("Lease", "LEASE") {}
 
-    event AssetCreated(address indexed _from, string tokenURI);
+    event AssetCreated(address indexed _from, string _tokenURI);
 
     event Leased(
-        uint256 indexed tokenId,
-        address indexed lessee,
-        uint256 start,
-        uint256 end
+        uint256 indexed _tokenId,
+        address indexed _lessee,
+        uint256 _start,
+        uint256 _end
     );
 
     event LeaseTransferred(
-        uint256 indexed tokenId,
-        address indexed lessee,
-        address indexed addressTo,
-        uint256 start,
-        uint256 end
+        uint256 indexed _tokenId,
+        address indexed _lessee,
+        address indexed _addressTo,
+        uint256 _start,
+        uint256 _end
     );
 
-    event LeaseCancelled(uint256 indexed tokenId, address indexed lessee);
+    event LeaseCancelled(uint256 indexed _tokenId, address indexed _lessee);
 
     using SafeMath for uint256;
     using Counters for Counters.Counter;
