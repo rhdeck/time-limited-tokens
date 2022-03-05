@@ -1,0 +1,50 @@
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1rem 10%;
+  height: 5rem;
+}
+
+.customNav {
+  padding-left: 10px;
+}
+
+.navOverride {
+  color:"white";
+}
+
+
+.address {
+  overflow: hidden;
+  max-width: 300px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color:white;
+
+}
+
+@media (max-width: 600px) {
+  .logo {
+    font-size: 2.5rem;
+  }
+  .header {
+    width: 100%;
+    min-width: 700px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1rem 10%;
+    height: 5rem;
+  }
+  .address {
+    overflow: hidden;
+    display:none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px
+  }
+
+
+}

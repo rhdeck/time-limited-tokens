@@ -1,0 +1,38 @@
+{
+  "name": "lease",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@walletconnect/web3-provider": "^1.7.1",
+    "bootstrap": "^5.1.3",
+    "next": "^12.0.8",
+    "react": "17.0.2",
+    "react-bootstrap": "^2.0.2",
+    "react-dom": "17.0.2",
+    "web3modal": "^1.9.5"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "autoprefixer": "^10.4.0",
+    "chai": "^4.3.4",
+    "eslint": "7.32.0",
+    "eslint-config-next": "12.0.2",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.1",
+    "hardhat": "^2.8.2",
+    "postcss": "^8.3.11",
+    "tailwindcss": "^2.2.19"
+  },
+  "description": "This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).",
+  "main": "next.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
