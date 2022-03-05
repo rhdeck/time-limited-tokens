@@ -74,6 +74,13 @@ interface IERC721Lease {
         address _addressTo
     ) external;
 
+    /// @notice @greenidiot can we add these as functions?
+    function MAX_LEASE_DURATION() external returns (uint256); // 60 days
+
+    function MIN_LEASE_DURATION() external returns (uint256); // 1 day in 30s blocks, or 86400 for days
+
+    function USE_TIMESTAMP() external returns (bool); // Use timestamp instead of block number
+
     /// @notice Check again
     function getLeaseApproved(uint256 _tokenId) external view returns (address);
 
