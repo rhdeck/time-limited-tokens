@@ -156,7 +156,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         view
         returns (uint256)
     {
-        Term memory term = getLease(_tokenId, _date);
+        Term memory term = _getLease(_tokenId, _date);
         if (term.startTime == 0) {
             return 0;
         }
@@ -392,15 +392,12 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) internal {
-          require(
+        require(
             leasesByToken[_tokenId].length > 0,
             "No terms exist for this lease"
         );
 
-        address lessee = lesseeOf(
-            _tokenId,
-            _start.mul(86400).add(TIME_START)
-        );
+        address lessee = lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
         require(
             lessee == msg.sender,
             "Address does not have rights to this lease"
@@ -413,13 +410,12 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
 
         for (uint256 i = 0; i < leases.length; i++) {
             if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
-            delete leasesByToken[_tokenId][leases[i]];
-            leasesByAddress[msg.sender][_tokenId][i] = 0;
-            for (uint256 i = tempStart; i <= tempEnd; i++) {
-            daysTaken[_tokenId][i] = false;
-        }
-
-            } 
+                delete leasesByToken[_tokenId][leases[i]];
+                leasesByAddress[msg.sender][_tokenId][i] = 0;
+                for (uint256 i = tempStart; i <= tempEnd; i++) {
+                    daysTaken[_tokenId][i] = false;
+                }
+            }
         }
 
         emit LeaseCancelled(_tokenId, msg.sender);
