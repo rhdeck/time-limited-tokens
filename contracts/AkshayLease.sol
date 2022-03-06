@@ -56,6 +56,10 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         return TIMESTAMP;
     }
 
+    function getAssets(uint256 _tokenId) public view returns (string memory) {
+        return assets[_tokenId];
+    }
+
     function lesseeOf(uint256 _tokenId, uint256 _date)
         external
         view
@@ -142,6 +146,18 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     {
         Term memory term = _getLease(_tokenId, _date);
         if (term.endTime == 0) {
+            return 0;
+        }
+        return term.endTime;
+    }
+
+    function getLeaseStart(uint256 _tokenId, uint256 _date)
+        public
+        view
+        returns (uint256)
+    {
+        Term memory term = getLease(_tokenId, _date);
+        if (term.startTime == 0) {
             return 0;
         }
         return term.endTime;
@@ -376,12 +392,15 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) internal {
-        require(
+          require(
             leasesByToken[_tokenId].length > 0,
             "No terms exist for this lease"
         );
 
-        address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        address lessee = lesseeOf(
+            _tokenId,
+            _start.mul(86400).add(TIME_START)
+        );
         require(
             lessee == msg.sender,
             "Address does not have rights to this lease"
@@ -389,16 +408,21 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
 
         uint256[] memory leases = leasesByAddress[msg.sender][_tokenId];
 
+        uint256 tempStart = getLeaseStart(_tokenId, _start);
+        uint256 tempEnd = getLeaseEnd(_tokenId, _start);
+
         for (uint256 i = 0; i < leases.length; i++) {
+            if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
             delete leasesByToken[_tokenId][leases[i]];
             leasesByAddress[msg.sender][_tokenId][i] = 0;
-        }
-
-        for (uint256 i = _start; i <= _end; i++) {
+            for (uint256 i = tempStart; i <= tempEnd; i++) {
             daysTaken[_tokenId][i] = false;
         }
 
-        emit Unleased(_tokenId, msg.sender, _start, _end);
+            } 
+        }
+
+        emit LeaseCancelled(_tokenId, msg.sender);
     }
 
     function mintAsset(

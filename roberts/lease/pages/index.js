@@ -34,6 +34,7 @@ const App = () => {
   const initialFormData = Object.freeze({
     dateOne: "",
     dateTwo: "",
+    wallet: ""
   });
 
   const [formData, updateFormData] = useState(initialFormData);
@@ -173,6 +174,38 @@ const App = () => {
 
   }
 
+  const transferLease = async (id) => {
+    let dates1 = Number(convertDate(formData.dateOne));
+    let dates2 = Number(convertDate(formData.dateTwo));
+    let dateStart = await instanceOne.TIME_START();
+    dateStart = Number(dateStart);
+    dates1 = Math.round((dates1-dateStart)/86400)+1;
+    dates2 = Math.round((dates2-dateStart)/86400)+1;
+
+    try {
+      await instanceOne.transferLease(id, dates1, dates2, formData.wallet);
+    } catch (err) {
+      console.log(err.message)
+    }
+
+  }
+
+  const unlease = async (id) => {
+    let dates1 = Number(convertDate(formData.dateOne));
+    let dates2 = Number(convertDate(formData.dateTwo));
+    let dateStart = await instanceOne.TIME_START();
+    dateStart = Number(dateStart);
+    dates1 = Math.round((dates1-dateStart)/86400)+1;
+    dates2 = Math.round((dates2-dateStart)/86400)+1;
+
+    try {
+      await instanceOne.transferLease(id, dates1, dates2);
+    } catch (err) {
+      console.log(err.message)
+    }
+
+  }
+
   useEffect(() => {
   fetchAccountData();
 }, []);
@@ -195,11 +228,11 @@ getAllAssets();
                     ></ModalMint>
                   </div>
 
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center mx-24">
                   { allAssets ?
                     allAssets.map((token) => {
                       return (
-   <div key={token} className="bg-white font-semibold text-center rounded-3xl border shadow-lg p-10 max-w-lg m-2">
+   <div key={token} className="bg-white font-semibold text-center rounded-3xl border shadow-lg p-10 max-w-lg m-2 w-96">
      <img className="mb-3 w-48 h-48 rounded-full shadow-lg mx-auto" src={`https://ipfs.io/ipfs/${token.image}`} alt="jet"/>
      <h1 className="text-lg text-gray-700">{token.name}</h1>
      <p className="text-md text-gray-400 mt-4">{token.description}</p>
@@ -225,7 +258,20 @@ getAllAssets();
        className="w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
        required
      />
-     <button onClick={() => lease(token.id)} className="button">Lease</button>
+     <div className="flex justify-center">
+     <button onClick={() => lease(token.id)} className="buttonThree">Lease</button>
+     <button onClick={() => unlease(token.id)} className="buttonTwo">Unlease</button>
+     </div>
+     <button onClick={() => transferLease(token.id)} className="button inline-block">Transfer Lease To:</button>
+     <input
+       id="wallet"
+       type="text"
+       name="wallet"
+       placeholder="Wallet Address 0x..."
+       onChange={handleChange}
+       className="inline-block w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+     />
+     
      </div>
    </div>)
  })
