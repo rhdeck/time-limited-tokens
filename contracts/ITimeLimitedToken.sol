@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 /// @notice This interface describes all the events and functions that must
 /// be implemented in order to create a Time Limited Token
 
-interface TimeLimitedToken {
+interface ITimeLimitedToken {
     /// @notice The Term structure describes a lease
     /// @param lessee is the lessee for the duration of the lease
     /// @param tokenId is the token for the said lease
