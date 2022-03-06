@@ -167,7 +167,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         if (term.startTime == 0) {
             return 0;
         }
-        return term.endTime;
+        return term.startTime;
     }
 
     function isLeaseAvailable(
@@ -389,8 +389,8 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
             if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
                 delete leasesByToken[_tokenId][leases[i]];
                 leasesByAddress[msg.sender][_tokenId][i] = 0;
-                for (uint256 i = tempStart; i <= tempEnd; i++) {
-                    daysTaken[_tokenId][i] = false;
+                for (uint256 j = tempStart; j <= tempEnd; j++) {
+                    daysTaken[_tokenId][j] = false;
                 }
             }
         }
