@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import React from "react";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";

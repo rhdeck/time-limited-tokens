@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import classes from "./main-header.module.css";
 import { Navbar, NavDropdown } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Image from 'next/image'
-import Link from 'next/link'
+import Link from 'next/link';
 import { useRouter } from 'next/router'
 import { ethers } from "ethers";
 
