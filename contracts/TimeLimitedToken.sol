@@ -111,7 +111,7 @@ interface TimeLimitedToken {
     ) external;
 
     /// @notice This function unleases a token for the duration specified
-    /// @dev LeaseCancelled event is emitted
+    /// @dev Unleased event is emitted
     /// @param _tokenId is the token that is being unleased
     /// @param _start is the start time of the duration being unleased
     /// @param _end is the end time of the duration being unleased
@@ -124,7 +124,7 @@ interface TimeLimitedToken {
     ) external;
 
     /// @notice This function unleases a token for the duration specified
-    /// @dev LeaseCancelled event is emitted, Calling this version of unlease
+    /// @dev Unleased event is emitted, Calling this version of unlease
     /// is the same as calling the above one with empty _data field
     /// @param _tokenId is the token that is being unleased
     /// @param _start is the start time of the duration being unleased
