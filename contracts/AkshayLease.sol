@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "hardhat/console.sol";
-import "contracts/IERC_RobertLease.sol";
+import "contracts/TimeLimitedToken.sol";
 
-contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
+contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     constructor() ERC721("Lease", "LEASE") {}
 
     // event AssetCreated(address indexed _from, string _tokenURI);
@@ -53,11 +53,27 @@ contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
     mapping(uint256 => mapping(uint256 => bool)) public daysTaken;
     mapping(uint256 => string) public assets;
 
-    function MAX_LEASE_DURATION() public pure returns (uint256) {
+    event AssetCreated(address indexed _from, string _tokenURI);
+
+    /// @notice This event is emitted when a lease is tranferred for a token from a lessee to another address
+    /// @param _tokenId is the token for which the lease is being transferred.
+    /// @param _lessee is the address who currently has the lease and is transferring it to another address
+    /// @param _addressTo is the address to which the lease is being transferred
+    /// @param _start is the start time of the lease being transferred
+    /// @param _end is the end time of the lease being transferred
+    event LeaseTransferred(
+        uint256 indexed _tokenId,
+        address indexed _lessee,
+        address indexed _addressTo,
+        uint256 _start,
+        uint256 _end
+    );
+
+    function MAX_LEASE_DURATION() external view returns (uint256) {
         return MAX_DURATION;
     }
 
-    function MIN_LEASE_DURATION() public pure returns (uint256) {
+    function MIN_LEASE_DURATION() external view returns (uint256) {
         return MIN_DURATION;
     }
 
@@ -123,19 +139,19 @@ contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
     function isLeaseAvailable(
         uint256 _tokenId,
         uint256 _start,
-        uint256 _end,
-        uint256 _now
+        uint256 _end
     ) public view returns (bool) {
-        if (_now == 0) {
-            _now = block.timestamp;
-        }
+        // if (_now == 0) {
+        //     _now = block.timestamp;
+        // }
+        uint256 _now = block.timestamp;
         require(_end > _start);
         require(
-            _end.sub(_start).mul(86400) <= MAX_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) <= MAX_DURATION,
             "Lease duration is too long"
         );
         require(
-            _end.sub(_start).mul(86400) >= MIN_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) >= MIN_DURATION,
             "Lease duration is too short"
         );
         uint256 currentContractDate = (_now.sub(TIME_START)).div(86400);
@@ -164,11 +180,11 @@ contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
     ) public {
         require(_end > _start);
         require(
-            _end.sub(_start).mul(86400) <= MAX_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) <= MAX_DURATION,
             "Lease duration is too long"
         );
         require(
-            _end.sub(_start).mul(86400) >= MIN_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) >= MIN_DURATION,
             "Lease duration is too short"
         );
         require(_tokenId != 0);
@@ -218,7 +234,7 @@ contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
     ) internal {
         require(_end > _start);
         require(
-            _end.sub(_start).mul(86400) <= MAX_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) <= MAX_DURATION,
             "Lease duration is too long"
         );
         require(
@@ -334,7 +350,7 @@ contract ERC721LeaseBase is ERC721URIStorage, IERC_RobertLease {
             daysTaken[_tokenId][i] = false;
         }
 
-        emit LeaseCancelled(_tokenId, msg.sender);
+        emit Unleased(_tokenId, msg.sender);
     }
 
     function mintAsset(
