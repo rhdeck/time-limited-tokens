@@ -7,8 +7,9 @@ import ModalMint from "../components/modal/modalMint";
 import ModalAccess from "../components/modal/modalAccess";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from "web3modal";
-import thisABI from "../src/utils/Lease.json";
+import thisABI from "../../../artifacts/contracts/TimeLimitedToken.sol/TimeLimitedToken.json";
 import { useEtherizer } from "./../components/Etherizer";
+import { ethers } from "ethers";
 // import {
 //   ContractsAppContext,
 //   EthersAppContext,
@@ -23,7 +24,7 @@ const App = () => {
   console.log("GM");
   const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
   // const provider = new ethers.providers.InfuraProvider();
-  const thisContract = "0x5f137a4A20603DdC0DE1d7153FC564d8FeffD530";
+  const thisContract = "0x22923Be5ac27f9B3D53811e59C2D52C9ef6aBE83";
   const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
   const [currentAccount, setCurrentAccount] = useState();
   const [loading, setLoading] = useState(false);
@@ -169,7 +170,7 @@ const App = () => {
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.lease(id, dates1, dates2);
+      await instanceOne.lease(currentAccount, id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }
@@ -199,7 +200,7 @@ const App = () => {
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.transferLease(id, dates1, dates2);
+      await instanceOne.transferLease(id, dates1, dates2, '0x0'); //check how to transfer to address 0
     } catch (err) {
       console.log(err.message);
     }
