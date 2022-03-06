@@ -9,6 +9,7 @@ import ModalAccess from "../components/modal/modalAccess";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from "web3modal";
 import thisABI from "../src/utils/Lease.json";
+import { useEtherizer } from "./../components/Etherizer";
 // import {
 //   ContractsAppContext,
 //   EthersAppContext,
@@ -21,6 +22,7 @@ const App = () => {
   const router = useRouter();
   // const {} = useEthersContext();
   console.log("GM");
+  const { isConnected } = useEtherizer();
   const provider = new ethers.providers.InfuraProvider();
   const thisContract = "0x5f137a4A20603DdC0DE1d7153FC564d8FeffD530";
   const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
@@ -227,10 +229,10 @@ const App = () => {
 
       <div className="flex items-center justify-center mx-24">
         {allAssets ? (
-          allAssets.map((token) => {
+          allAssets.map((token, index) => {
             return (
               <div
-                key={token}
+                key={index}
                 className="bg-white font-semibold text-center rounded-3xl border shadow-lg p-10 max-w-lg m-2 w-96"
               >
                 <img
