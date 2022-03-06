@@ -14,6 +14,17 @@ export const useEtherizer = () => {
   const stuff = useContext(context);
   return stuff;
 };
+const providerOptions = {
+  injected: {
+    display: {
+      logo: "data:image/gif;base64,INSERT_BASE64_STRING",
+      name: "Injected",
+      description: "Connect with the provider in your Browser",
+    },
+    package: null,
+  },
+};
+const network = "mumbai";
 const Etherizer = ({ children }) => {
   const [hasEthereum, setHasEthereum] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -42,17 +53,7 @@ const Etherizer = ({ children }) => {
       }
     })();
   }, []);
-  const providerOptions = {
-    injected: {
-      display: {
-        logo: "data:image/gif;base64,INSERT_BASE64_STRING",
-        name: "Injected",
-        description: "Connect with the provider in your Browser",
-      },
-      package: null,
-    },
-  };
-  const network = "mumbai";
+
   const connect = useCallback(() => {
     (async () => {
       console.log("Running requestaccounts");
@@ -84,7 +85,7 @@ const Etherizer = ({ children }) => {
     // await provider.request({method: "wallet_requestPermissions"})
     // await provider.disconnect();
     // setIsConnected(false);
-  }, [provider]);
+  }, []);
   const value = useMemo(() => {
     return { isConnected, provider, signer, disconnect, ethers };
   }, [isConnected, provider, signer, disconnect]);

@@ -9,32 +9,30 @@ import { useEtherizer } from "../Etherizer";
 function MainHeader() {
   const { disconnect } = useEtherizer();
   console.log("loading mainheader", useEtherizer());
-  if (ethereum) {
-    const [currentAccount, setCurrentAccount] = useState("");
-    let accounts = [];
-    let addSign;
-    let newList = [];
+  const [currentAccount, setCurrentAccount] = useState("");
+  let accounts = [];
+  let addSign;
+  let newList = [];
 
-    const getAcct = async () => {
-      const { ethereum } = window;
+  const getAcct = async () => {
+    const { ethereum } = window;
 
-      try {
-        accounts = await ethereum.request({ method: "eth_accounts" });
+    try {
+      accounts = await ethereum.request({ method: "eth_accounts" });
 
-        const newContract = new ethers.providers.InfuraProvider("homestead");
+      const newContract = new ethers.providers.InfuraProvider("homestead");
 
-        addSign = await newContract.lookupAddress(accounts[0]);
-        if (addSign == null || !addSign) {
-          newList.push(accounts[0]);
-        } else {
-          newList.push(addSign);
-        }
-      } catch (err) {
-        console.log(err.message);
+      addSign = await newContract.lookupAddress(accounts[0]);
+      if (addSign == null || !addSign) {
+        newList.push(accounts[0]);
+      } else {
+        newList.push(addSign);
       }
-      setCurrentAccount(newList[0]);
-    };
-  }
+    } catch (err) {
+      console.log(err.message);
+    }
+    setCurrentAccount(newList[0]);
+  };
 
   if (typeof window !== "undefined") {
     const { ethereum } = window;
