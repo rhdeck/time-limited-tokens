@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "hardhat/console.sol";
 
-contract ERC721LeaseBase is ERC721URIStorage {
+contract RobertLease is ERC721URIStorage {
     constructor() ERC721("Lease", "LEASE") {}
 
     event AssetCreated(address indexed _from, string _tokenURI);

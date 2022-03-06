@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "hardhat/console.sol";
 import "contracts/TimeLimitedToken.sol";
 
 contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
@@ -136,7 +135,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         override
         returns (Term[] memory)
     {
-        require(false, "Todo");
+        require(false);
     }
 
     function getLeaseEnd(uint256 _tokenId, uint256 _date)
@@ -189,20 +188,11 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         // }
         uint256 _now = block.timestamp;
         require(_end > _start);
-        require(
-            _end.sub(_start).mul(86400) <= MAX_DURATION,
-            "Lease duration is too long"
-        );
-        require(
-            _end.sub(_start).mul(86400) >= MIN_DURATION,
-            "Lease duration is too short"
-        );
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
         uint256 currentContractDate = (_now.sub(TIME_START)).div(86400);
-        require(_end >= _start, "End date should be later than start");
-        require(
-            _start >= currentContractDate,
-            "Start date cannot be in the past"
-        );
+        require(_end >= _start);
+        require(_start >= currentContractDate);
 
         if (_start > lastEndTimeByToken[_tokenId]) {
             return true;
@@ -244,14 +234,8 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256 _end
     ) internal {
         require(_end > _start);
-        require(
-            _end.sub(_start).mul(86400) <= MAX_DURATION,
-            "Lease duration is too long"
-        );
-        require(
-            _end.sub(_start).mul(86400) >= MIN_DURATION,
-            "Lease duration is too short"
-        );
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
         require(_tokenId != 0);
         require(_start != 0);
         require(_end != 0);
@@ -262,7 +246,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
 
         if (terms.length != 0) {
             leaseAvailable = _isLeaseAvailable(_tokenId, _start, _end);
-            require(leaseAvailable, "Lease not available");
+            require(leaseAvailable);
         }
 
         uint256 startDate = _start.mul(1 days).add(TIME_START);
@@ -293,14 +277,8 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256 _oldEnd
     ) internal {
         require(_end > _start);
-        require(
-            _end.sub(_start).mul(86400) <= MAX_DURATION,
-            "Lease duration is too long"
-        );
-        require(
-            _end.sub(_start).mul(86400) >= MIN_DURATION,
-            "Lease duration is too short"
-        );
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
         require(_tokenId != 0);
         require(_start != 0);
         require(_end != 0);
@@ -337,7 +315,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
             }
 
             if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
-                console.log(oldStart, newStart);
+                // console.log(oldStart, newStart);
                 _lease(_addressTo, _tokenId, oldStart, newStart);
             }
             if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
@@ -353,20 +331,17 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256 _end,
         address _addressTo
     ) external payable {
-        require(_tokenId != 0, "Token ID cannot be zero");
-        require(_end != 0, "End date cannot be zero");
-        require(_start < _end, "Start date must be before end date");
+        require(_tokenId != 0);
+        require(_end != 0);
+        require(_start < _end);
 
         Term memory term = _getLease(
             _tokenId,
             _start.mul(86400).add(TIME_START)
         );
 
-        require(
-            term.lessee == msg.sender,
-            "Address does not have rights to this lease"
-        );
-        require(term.endTime >= _end, "Lessee does not lease past end date");
+        require(term.lessee == msg.sender);
+        require(term.endTime >= _end);
 
         uint256 oldStart = term.startTime;
         uint256 oldEnd = term.endTime;
@@ -400,16 +375,10 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) internal {
-        require(
-            leasesByToken[_tokenId].length > 0,
-            "No terms exist for this lease"
-        );
+        require(leasesByToken[_tokenId].length > 0);
 
         address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
-        require(
-            lessee == msg.sender,
-            "Address does not have rights to this lease"
-        );
+        require(lessee == msg.sender);
 
         uint256[] memory leases = leasesByAddress[msg.sender][_tokenId];
 
@@ -475,7 +444,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256,
         uint256
     ) external pure override {
-        require(false, "approveLease isnt implemented yet!");
+        require(false);
     }
 
     function getLeaseApproved(
@@ -483,12 +452,12 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         uint256,
         uint256
     ) external pure override returns (address) {
-        require(false, "getLeaseApproved isnt implemented yet!");
+        require(false);
         return address(0);
     }
 
     function setLeaseApprovalForAll(address, bool) external pure override {
-        require(false, "setLeaseApprovalForAll isnt implemented yet!");
+        require(false);
     }
 
     function isLeaseApprovedForall(address, address)
@@ -497,7 +466,7 @@ contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
         override
         returns (bool)
     {
-        require(false, "isLeaseApprovedForall isnt implemented yet!");
+        require(false);
         return false;
     }
 }
