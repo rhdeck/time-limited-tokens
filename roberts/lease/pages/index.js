@@ -22,8 +22,8 @@ const App = () => {
   const router = useRouter();
   // const {} = useEthersContext();
   console.log("GM");
-  const { isConnected } = useEtherizer();
-  const provider = new ethers.providers.InfuraProvider();
+  const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
+  // const provider = new ethers.providers.InfuraProvider();
   const thisContract = "0x5f137a4A20603DdC0DE1d7153FC564d8FeffD530";
   const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
   const [currentAccount, setCurrentAccount] = useState();
@@ -267,10 +267,7 @@ const App = () => {
                     required
                   />
                   <div className="flex justify-center">
-                    <button
-                      onClick={() => lease(token.id)}
-                      className="button"
-                    >
+                    <button onClick={() => lease(token.id)} className="button">
                       Lease
                     </button>
                     <button

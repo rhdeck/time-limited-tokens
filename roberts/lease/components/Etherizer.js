@@ -86,7 +86,7 @@ const Etherizer = ({ children }) => {
     // setIsConnected(false);
   }, [provider]);
   const value = useMemo(() => {
-    return { isConnected, provider, signer, disconnect };
+    return { isConnected, provider, signer, disconnect, ethers };
   }, [isConnected, provider, signer, disconnect]);
   if (!hasEthereum) {
     return "No wallet software detected";
