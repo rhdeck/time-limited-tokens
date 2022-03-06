@@ -37,7 +37,9 @@
     "validate-npm-package-name": "^3.0.0"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@openzeppelin/contracts": "^4.5.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "hardhat-contract-sizer": "^2.5.0"
   }
 }
