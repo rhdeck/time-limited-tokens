@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "hardhat/console.sol";
 import "contracts/TimeLimitedToken.sol";
 
-contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
+contract AkshayLease is ERC721URIStorage, TimeLimitedToken {
     constructor() ERC721("Lease", "LEASE") {}
 
     using SafeMath for uint256;
@@ -144,6 +144,14 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         view
         returns (uint256)
     {
+        return _getLeaseEnd(_tokenId, _date);
+    }
+
+    function _getLeaseEnd(uint256 _tokenId, uint256 _date)
+        internal
+        view
+        returns (uint256)
+    {
         Term memory term = _getLease(_tokenId, _date);
         if (term.endTime == 0) {
             return 0;
@@ -152,7 +160,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     }
 
     function getLeaseStart(uint256 _tokenId, uint256 _date)
-        public
+        internal
         view
         returns (uint256)
     {
@@ -397,7 +405,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
             "No terms exist for this lease"
         );
 
-        address lessee = lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
         require(
             lessee == msg.sender,
             "Address does not have rights to this lease"
@@ -406,7 +414,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256[] memory leases = leasesByAddress[msg.sender][_tokenId];
 
         uint256 tempStart = getLeaseStart(_tokenId, _start);
-        uint256 tempEnd = getLeaseEnd(_tokenId, _start);
+        uint256 tempEnd = _getLeaseEnd(_tokenId, _start);
 
         for (uint256 i = 0; i < leases.length; i++) {
             if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
@@ -418,7 +426,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
             }
         }
 
-        emit LeaseCancelled(_tokenId, msg.sender);
+        emit Unleased(_tokenId, msg.sender, _start, _end);
     }
 
     function mintAsset(
