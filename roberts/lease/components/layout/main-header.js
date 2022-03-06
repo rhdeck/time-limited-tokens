@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 import { useEtherizer } from "../Etherizer";
 function MainHeader() {
   const { disconnect } = useEtherizer();
+  console.log("loading mainheader", useEtherizer());
   if (ethereum) {
     const [currentAccount, setCurrentAccount] = useState("");
     let accounts = [];
@@ -69,7 +70,9 @@ function MainHeader() {
                 <h6 className="text-lg mt-auto overflow-hidden truncate w-72 headertext">
                   Connected to: {currentAccount}{" "}
                 </h6>
-                <button onClick={() => disconnect()}>Disconnect</button>
+                {/* {disconnect && (
+                  <button onClick={() => disconnect()}>Disconnect</button>
+                )} */}
               </Fragment>
             ) : (
               ""
