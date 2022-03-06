@@ -2,212 +2,471 @@
 
 pragma solidity ^0.8.0;
 
-/// @title Time Limited Tokens
-/// @notice This interface describes all the events and functions that must
-/// be implemented in order to create a Time Limited Token
+import "@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "contracts/ITimeLimitedToken.sol";
 
-interface TimeLimitedToken {
-    /// @notice The Term structure describes a lease
-    /// @param lessee is the lessee for the duration of the lease
-    /// @param tokenId is the token for the said lease
-    /// @param startTime is the start time of the lease
-    /// @param endTime is the end time of the lease
-    struct Term {
-        address lessee;
-        uint256 tokenId;
-        uint256 startTime;
-        uint256 endTime;
+contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
+    constructor() ERC721("Lease", "LEASE") {}
+
+    using SafeMath for uint256;
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
+
+    uint256 public constant TIME_START = 1640970000; // Jan-1-22
+    uint256 public constant MAX_DURATION = 60 days; // 60 days
+    uint256 public constant MIN_DURATION = 1 days; // 1 day in 30s blocks, or 86400 for days
+    bool public constant TIMESTAMP = false; // Use timestamp instead of block number
+
+    // A mapping by tokenId to a mapping of startTime to term
+    mapping(uint256 => Term[]) public leasesByToken;
+    mapping(address => mapping(uint256 => uint256[])) public leasesByAddress;
+    mapping(uint256 => uint256) public lastEndTimeByToken;
+    mapping(uint256 => mapping(uint256 => bool)) public daysTaken;
+    mapping(uint256 => string) public assets;
+
+    event AssetCreated(address indexed _from, string _tokenURI);
+
+    /// @notice This event is emitted when a lease is tranferred for a token from a lessee to another address
+    /// @param _tokenId is the token for which the lease is being transferred.
+    /// @param _lessee is the address who currently has the lease and is transferring it to another address
+    /// @param _addressTo is the address to which the lease is being transferred
+    /// @param _start is the start time of the lease being transferred
+    /// @param _end is the end time of the lease being transferred
+    event LeaseTransferred(
+        uint256 indexed _tokenId,
+        address indexed _lessee,
+        address indexed _addressTo,
+        uint256 _start,
+        uint256 _end
+    );
+
+    function MAX_LEASE_DURATION() external view override returns (uint256) {
+        return MAX_DURATION;
     }
 
-    /// @notice This event is emitted when a new lease is assigned by any mechanism
-    /// @param _tokenId of the asset
-    /// @param _lessee is the address to which the lease is assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end of the lease
-    event Leased(
-        uint256 indexed _tokenId,
-        address indexed _lessee,
-        uint256 _start,
-        uint256 _end
-    );
+    function MIN_LEASE_DURATION() external view override returns (uint256) {
+        return MIN_DURATION;
+    }
 
-    /// @notice This event is emitted when a lease is unleased by any mechanism
-    /// @param _tokenId of the asset that is being unleased
-    /// @param _lessee is the lessee of the asset to unlease from
-    /// @param _start is the start time of the lease that is unleased
-    /// @param _end is the end of the lease of the lease that is unleased
-    event Unleased(
-        uint256 indexed _tokenId,
-        address indexed _lessee,
-        uint256 _start,
-        uint256 _end
-    );
+    function USE_TIMESTAMP() external pure override returns (bool) {
+        return TIMESTAMP;
+    }
 
-    /// @notice This function returns the lessee of the tokenId for a given block
-    /// @dev Blocks or Timestamp can be abstracted to hours, days, etc based on business logic
-    /// @param _tokenId is the tokenId for which are checking the lesseOf
-    /// @param _blockOrTimestamp is the block number  or timestamp at which we are checking who the lessee is
-    /// @return address is the address that has the lease of the the _tokenId at _blockOrTimestamp
-    function lesseeOf(uint256 _tokenId, uint256 _blockOrTimestamp)
+    function getAssets(uint256 _tokenId) public view returns (string memory) {
+        return assets[_tokenId];
+    }
+
+    function lesseeOf(uint256 _tokenId, uint256 _date)
         external
         view
-        returns (address);
+        override
+        returns (address)
+    {
+        _lesseeOf(_tokenId, _date);
+    }
 
-    /// @notice This function returns a lease for a given a tokenId and block
-    /// @param _tokenId is the token for which the lease is being checked
-    /// @param _blockOrTimestamp is the the block number or timestamp at which we are checking the lease
-    /// @return Term is the lease being returned
-    function getLease(uint256 _tokenId, uint256 _blockOrTimestamp)
+    function _lesseeOf(uint256 _tokenId, uint256 _date)
+        internal
+        view
+        returns (address)
+    {
+        require(_tokenId != 0);
+        require(_date != 0);
+
+        Term[] memory terms = leasesByToken[_tokenId];
+        if (terms.length == 0) {
+            return address(0);
+        }
+
+        for (uint256 i = 0; i < terms.length; i++) {
+            if (terms[i].startTime <= _date && _date <= terms[i].endTime) {
+                return terms[i].lessee;
+            }
+        }
+        return address(0);
+    }
+
+    function getLease(uint256 _tokenId, uint256 _date)
         external
         view
-        returns (Term memory);
+        override
+        returns (Term memory)
+    {
+        _getLease(_tokenId, _date);
+    }
 
-    /// @notice This function returns an array of leases (if any) for a given tokenid
-    /// @param _tokenId is the token for which the leases are being returned
-    /// @return Term[] is the array of leases
-    function getLeases(uint256 _tokenId) external view returns (Term[] memory);
+    function _getLease(uint256 _tokenId, uint256 _date)
+        internal
+        view
+        returns (Term memory)
+    {
+        require(_tokenId != 0);
+        require(_date != 0);
 
-    /// @notice This function returns an array of leases given an address for the lessee
-    /// @param _address is the lessee
-    /// @return Term[] is the array of leases
-    function getLeases(address _address) external view returns (Term[] memory);
+        Term[] memory terms = leasesByToken[_tokenId];
+        if (terms.length == 0) {
+            return terms[0];
+        }
 
-    /// @notice This function checks if a lease is available for a tokenId
-    /// @param _tokenId is the token for which we are checking if a lease is available
-    /// @param _start is the start time of the lease we are checking
-    /// @param _end is the end time of the lease we are checking
-    /// @return Returns true if a lease is available else false
+        for (uint256 i = 0; i < terms.length; i++) {
+            if (terms[i].startTime <= _date && _date <= terms[i].endTime) {
+                return terms[i];
+            }
+        }
+        return terms[0];
+    }
+
+    function getLeases(uint256 _tokenId)
+        external
+        view
+        override
+        returns (Term[] memory)
+    {
+        require(_tokenId != 0);
+        return leasesByToken[_tokenId];
+    }
+
+    function getLeases(address _address)
+        external
+        view
+        override
+        returns (Term[] memory)
+    {
+        require(false);
+    }
+
+    function getLeaseEnd(uint256 _tokenId, uint256 _date)
+        external
+        view
+        returns (uint256)
+    {
+        return _getLeaseEnd(_tokenId, _date);
+    }
+
+    function _getLeaseEnd(uint256 _tokenId, uint256 _date)
+        internal
+        view
+        returns (uint256)
+    {
+        Term memory term = _getLease(_tokenId, _date);
+        if (term.endTime == 0) {
+            return 0;
+        }
+        return term.endTime;
+    }
+
+    function getLeaseStart(uint256 _tokenId, uint256 _date)
+        internal
+        view
+        returns (uint256)
+    {
+        Term memory term = _getLease(_tokenId, _date);
+        if (term.startTime == 0) {
+            return 0;
+        }
+        return term.endTime;
+    }
+
     function isLeaseAvailable(
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) external view returns (bool);
+    ) external view override returns (bool) {
+        return _isLeaseAvailable(_tokenId, _start, _end);
+    }
 
-    /// @notice This function transfers the lease from the owner/current lessee/_operator to another
-    /// address for a certain token for a given time frame
-    /// @param _addressTo is the address to which the lease is being assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
-    /// @param _data Additional data with no specified format, sent in call to `_to`
+    function _isLeaseAvailable(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal view returns (bool) {
+        // if (_now == 0) {
+        //     _now = block.timestamp;
+        // }
+        uint256 _now = block.timestamp;
+        require(_end > _start);
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
+        uint256 currentContractDate = (_now.sub(TIME_START)).div(86400);
+        require(_end >= _start);
+        require(_start >= currentContractDate);
+
+        if (_start > lastEndTimeByToken[_tokenId]) {
+            return true;
+        }
+
+        for (uint256 j = _start; j <= _end; j++) {
+            if (daysTaken[_tokenId][j] == true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function lease(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) external override {
+        require(_addressTo == msg.sender);
+        _lease(_addressTo, _tokenId, _start, _end);
+    }
+
     function lease(
         address _addressTo,
         uint256 _tokenId,
         uint256 _start,
         uint256 _end,
         bytes memory _data
-    ) external;
+    ) external override {
+        require(_addressTo == msg.sender);
+        _lease(_addressTo, _tokenId, _start, _end);
+    }
 
-    /// @notice This function transfers the lease from the owner/current lessee/_operator to another
-    /// address for a certain token for a given time frame
-    /// @dev Calling this version of lease is the same as calling the above one with empty _data field
-    /// @param _addressTo is the address to which the lease is being assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
-    function lease(
+    function _lease(
         address _addressTo,
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) external;
+    ) internal {
+        require(_end > _start);
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
+        require(_tokenId != 0);
+        require(_start != 0);
+        require(_end != 0);
 
-    /// @notice This function unleases a token for the duration specified
-    /// @dev Unleased event is emitted
-    /// @param _tokenId is the token that is being unleased
-    /// @param _start is the start time of the duration being unleased
-    /// @param _end is the end time of the duration being unleased
-    /// @param _data Additional data with no specified format, sent in call to `_to`
+        bool leaseAvailable = true;
+
+        Term[] memory terms = leasesByToken[_tokenId];
+
+        if (terms.length != 0) {
+            leaseAvailable = _isLeaseAvailable(_tokenId, _start, _end);
+            require(leaseAvailable);
+        }
+
+        uint256 startDate = _start.mul(1 days).add(TIME_START);
+        uint256 endDate = _end.mul(1 days).add(TIME_START);
+
+        if (leaseAvailable) {
+            for (uint256 i = _start; i <= _end; i++) {
+                daysTaken[_tokenId][i] = true;
+            }
+
+            leasesByToken[_tokenId].push(
+                Term(msg.sender, _tokenId, startDate, endDate)
+            );
+            leasesByAddress[msg.sender][_tokenId].push(terms.length);
+            if (lastEndTimeByToken[_tokenId] < _end) {
+                lastEndTimeByToken[_tokenId] = _end;
+            }
+        }
+        emit Leased(_tokenId, _addressTo, _start, _end);
+    }
+
+    function leaseOnTransfer(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end,
+        address _addressTo,
+        uint256 _oldStart,
+        uint256 _oldEnd
+    ) internal {
+        require(_end > _start);
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
+        require(_tokenId != 0);
+        require(_start != 0);
+        require(_end != 0);
+
+        bool leaseGood = true;
+
+        Term[] memory terms = leasesByToken[_tokenId];
+
+        if (terms.length != 0) {
+            leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
+        }
+
+        uint256 startDate = _start.mul(1 days).add(TIME_START);
+        uint256 endDate = _end.mul(1 days).add(TIME_START);
+
+        uint256 oldStart = _oldStart.sub(TIME_START).div(86400);
+        uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
+
+        if (leaseGood) {
+            for (uint256 i = _start; i <= _end; i++) {
+                daysTaken[_tokenId][i] = true;
+            }
+
+            leasesByToken[_tokenId].push(
+                Term(_addressTo, _tokenId, startDate, endDate)
+            );
+            leasesByAddress[_addressTo][_tokenId].push(terms.length);
+
+            uint256 newStart = _start.sub(1);
+            uint256 newEnd = _end.add(1);
+
+            if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
+                _lease(_addressTo, _tokenId, newEnd, oldEnd);
+            }
+
+            if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
+                // console.log(oldStart, newStart);
+                _lease(_addressTo, _tokenId, oldStart, newStart);
+            }
+            if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
+                _lease(_addressTo, _tokenId, oldStart, newStart);
+                _lease(_addressTo, _tokenId, newEnd, oldEnd);
+            }
+        }
+    }
+
+    function transferLease(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end,
+        address _addressTo
+    ) external payable {
+        require(_tokenId != 0);
+        require(_end != 0);
+        require(_start < _end);
+
+        Term memory term = _getLease(
+            _tokenId,
+            _start.mul(86400).add(TIME_START)
+        );
+
+        require(term.lessee == msg.sender);
+        require(term.endTime >= _end);
+
+        uint256 oldStart = term.startTime;
+        uint256 oldEnd = term.endTime;
+
+        uint256 oldStartDays = term.startTime.sub(TIME_START).div(86400);
+        uint256 oldEndDays = term.endTime.sub(TIME_START).div(86400);
+
+        _unlease(_tokenId, oldStartDays, oldEndDays);
+        leaseOnTransfer(_tokenId, _start, _end, _addressTo, oldStart, oldEnd);
+    }
+
+    function unlease(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) external override {
+        _unlease(_tokenId, _start, _end);
+    }
+
     function unlease(
         uint256 _tokenId,
         uint256 _start,
         uint256 _end,
-        bytes memory _data
-    ) external;
+        bytes memory
+    ) external override {
+        _unlease(_tokenId, _start, _end);
+    }
 
-    /// @notice This function unleases a token for the duration specified
-    /// @dev Unleased event is emitted, Calling this version of unlease
-    /// is the same as calling the above one with empty _data field
-    /// @param _tokenId is the token that is being unleased
-    /// @param _start is the start time of the duration being unleased
-    /// @param _end is the end time of the duration being unleased
-    function unlease(
+    function _unlease(
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) external;
+    ) internal {
+        require(leasesByToken[_tokenId].length > 0);
 
-    /// @notice This function returns the maximum lease duration set
-    /// @return Maximum lease duration
-    function MAX_LEASE_DURATION() external view returns (uint256); // 60 days
+        address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        require(lessee == msg.sender);
 
-    /// @notice This function returns the minimum lease duration set
-    /// @return Minimum lease duration
-    function MIN_LEASE_DURATION() external view returns (uint256); // 1 day in 30s blocks, or 86400 for days
+        uint256[] memory leases = leasesByAddress[msg.sender][_tokenId];
 
-    /// @notice This function returns if Timestamp is being used for calculation
-    /// @return Returns true if Timestamp is being used else false (Block)
-    function USE_TIMESTAMP() external view returns (bool); // Use timestamp instead of block number
+        uint256 tempStart = getLeaseStart(_tokenId, _start);
+        uint256 tempEnd = _getLeaseEnd(_tokenId, _start);
 
-    /// @notice This event is emitted when a lease is approved by the current lessee or owner to a future lessee
-    /// @param _to is the specific address that is approved for the lease
-    /// @param _tokenId is the tokenid of the asset for which lease is being approved
-    /// @param _start is the start time for the lease approved
-    /// @param _end is the end time for the lease approved
-    event LeaseApproval(
-        address indexed _to,
-        uint256 indexed _tokenId,
-        uint256 _start,
-        uint256 _end
-    );
+        for (uint256 i = 0; i < leases.length; i++) {
+            if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
+                delete leasesByToken[_tokenId][leases[i]];
+                leasesByAddress[msg.sender][_tokenId][i] = 0;
+                for (uint256 i = tempStart; i <= tempEnd; i++) {
+                    daysTaken[_tokenId][i] = false;
+                }
+            }
+        }
 
-    /// @notice This event is emitted when the owner sets the lease approval for all
-    /// @param _from is the address that approves the lease for everyone (owner address)
-    /// @param _operator is the address of the operator/agent that is allowed to manage all the leases of the owner
-    /// @param _approved is whether to approve the _operator
-    event LeaseApprovalForAll(
-        address indexed _from,
-        address indexed _operator,
-        bool _approved
-    );
+        emit Unleased(_tokenId, msg.sender, _start, _end);
+    }
 
-    /// @notice This function is called when we are approving a lease for a tokenID for
-    /// a given time frame and for a given address
-    /// @param _addressTo is the address to approve for the said lease
-    /// @param _tokenId is the token for which the lease will be approved
-    /// @param _start is the start time of the approved lease
-    /// @param _end is the end time of the approaved lease
+    function mintAsset(
+        string memory _name,
+        string memory _description,
+        string memory _image
+    ) external payable {
+        _tokenIds.increment();
+        uint256 newItemId = _tokenIds.current();
+
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name": "',
+                        // We set the title of our NFT as the generated word.
+                        _name,
+                        '", "description": "',
+                        _description,
+                        '", "image": "',
+                        _image,
+                        '"}'
+                    )
+                )
+            )
+        );
+
+        string memory finalTokenUri = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
+
+        _safeMint(msg.sender, newItemId);
+
+        _setTokenURI(newItemId, finalTokenUri);
+
+        assets[newItemId] = finalTokenUri;
+
+        emit AssetCreated(msg.sender, finalTokenUri);
+    }
+
+    // Adding functions that have been defined in the interface but not defined in the contract yet
 
     function approveLease(
-        address _addressTo,
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
-    ) external;
+        address,
+        uint256,
+        uint256,
+        uint256
+    ) external pure override {
+        require(false);
+    }
 
-    /// @notice Given a token and lease start and end time, it returns the address
-    /// that is approved for the lease
-    /// @param _tokenId is the token for which we are checking the lease
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
     function getLeaseApproved(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
-    ) external view returns (address);
+        uint256,
+        uint256,
+        uint256
+    ) external pure override returns (address) {
+        require(false);
+        return address(0);
+    }
 
-    /// @notice Enable or disable approval for a third party ("operator") to manage
-    ///  all of `msg.sender`'s leases
-    /// @dev Authorizer(msg.sender) must be the owner
-    /// @param _operator the address of a third party that can manage all the leases
-    /// on behalf of the owner
-    /// @param _approved True if the operator is approved, false to revoke approval
-    function setLeaseApprovalForAll(address _operator, bool _approved) external;
+    function setLeaseApprovalForAll(address, bool) external pure override {
+        require(false);
+    }
 
-    /// This function checks if all the leases are approved
-    /// @param _owner is the address for whom to the lease belongs to
-    /// @param _operator the address of a third party that can manage all the leases
-    /// on behalf of the owner
-    function isLeaseApprovedForall(address _owner, address _operator)
+    function isLeaseApprovedForall(address, address)
         external
-        view
-        returns (bool);
+        pure
+        override
+        returns (bool)
+    {
+        require(false);
+        return false;
+    }
 }

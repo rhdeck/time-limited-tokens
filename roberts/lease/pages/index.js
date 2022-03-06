@@ -169,7 +169,7 @@ const App = () => {
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.lease(id, dates1, dates2);
+      await instanceOne.lease(currentAccount, id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }
@@ -199,7 +199,7 @@ const App = () => {
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.transferLease(id, dates1, dates2);
+      await instanceOne.transferLease(id, dates1, dates2, '0x0'); //check how to transfer to address 0
     } catch (err) {
       console.log(err.message);
     }
