@@ -1,6 +1,5 @@
 import Head from "next/head";
 import React, { useEffect, useCallback, useState } from "react";
-import { ethers } from "ethers";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -61,7 +60,6 @@ const App = () => {
   };
 
   let web3Modal;
-  let instanceTwo;
 
   async function init() {
     if (window !== undefined) {
@@ -80,7 +78,7 @@ const App = () => {
     const signer = provider.getSigner();
   }
 
-  async function fetchAccountData() {
+  const fetchAccountData = useCallback(async () => {
     const { ethereum } = window;
 
     let chainId;
@@ -103,7 +101,11 @@ const App = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const dappAddress = thisContract;
-        instanceTwo = new ethers.Contract(dappAddress, thisABI.abi, signer);
+        const instanceTwo = new ethers.Contract(
+          dappAddress,
+          thisABI.abi,
+          signer
+        );
         setInstanceOne(instanceTwo);
         setCurrentAccount(accounts[0]);
         console.log("Got accounts", accounts);
@@ -111,7 +113,7 @@ const App = () => {
       }
     } else {
     }
-  }
+  }, []);
 
   async function onConnect() {
     try {
@@ -139,7 +141,7 @@ const App = () => {
     });
   }
 
-  const getAllAssets = async () => {
+  const getAllAssets = useCallback(async () => {
     let assets = [];
     if (currentAccount) {
       for (let i = 1; i < 100000; i++) {
@@ -156,7 +158,7 @@ const App = () => {
       }
     }
     setAllAssets(assets);
-  };
+  }, [currentAccount, instanceOne]);
 
   const lease = async (id) => {
     let dates1 = Number(convertDate(formData.dateOne));
@@ -205,11 +207,11 @@ const App = () => {
 
   useEffect(() => {
     fetchAccountData();
-  }, []);
+  }, [fetchAccountData]);
 
   useEffect(() => {
     getAllAssets();
-  }, [instanceOne, currentAccount]);
+  }, [instanceOne, currentAccount, getAllAssets]);
 
   return (
     // <ContractsAppContext>
