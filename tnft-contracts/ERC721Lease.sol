@@ -20,7 +20,8 @@ contract ERC721LeaseBase is IERC721Lease {
     // A mapping by tokenId to a mapping of startTime to term
     mapping(uint256 => Term[]) leasesByToken;
     mapping(address => Term[]) leasesByAddress;
-    mapping(uint256 => uint256) lastEndTimeByToken; 
+    mapping(uint256 => uint256) lastEndTimeByToken;
+
     function lesseeOf(uint256 _tokenId, uint256 _block)
         external
         view
@@ -80,47 +81,50 @@ contract ERC721LeaseBase is IERC721Lease {
         return term.endTime;
     }
 
-function getNow() internal view returns (uint256) {
-    if(USE_TIMESTAMP) {
-        return now;
-    } else {
-        return block.number;
+    function getNow() internal view returns (uint256) {
+        if (USE_TIMESTAMP) {
+            return now;
+        } else {
+            return block.number;
+        }
     }
-}
 
-function isLeaseAvailable(uint256 _tokenId, uint256 _start,
-        uint256 _end, uint _now)  view returns (bool) {
-        if(_now == 0) {
+    function isLeaseAvailable(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end,
+        uint256 _now
+    ) view returns (bool) {
+        if (_now == 0) {
             _now = getNow();
         }
-        require( _end >= _start);
-        require (_start >= _now);
+        require(_end >= _start);
+        require(_start >= _now);
         uint256 thisBlock = _start;
-      
-        if(_start > lastEndTimeByToken[_tokenId]) {
+
+        if (_start > lastEndTimeByToken[_tokenId]) {
             return true;
         }
         bool isOk = true;
         while (thisBlock <= _end) {
-          uint256 index = 0;
-          while(index < terms.length) {
-              if (thisBlock >= terms[index].startTime) {
-                if(thisBlock <= terms[index].endTime) {
-                    return false;
+            uint256 index = 0;
+            while (index < terms.length) {
+                if (thisBlock >= terms[index].startTime) {
+                    if (thisBlock <= terms[index].endTime) {
+                        return false;
+                    }
+                    //@TODO WHERE WE LEFT OFF ON TUESDAY NIGHT
+                    // thisBlock = terms[index].endTime + 1;
+                    // if(thisBlock > _end) {
+                    //     return false;
+                    // }
                 }
-                //@TODO WHERE WE LEFT OFF ON TUESDAY NIGHT
-                // thisBlock = terms[index].endTime + 1;
-                // if(thisBlock > _end) {
-                //     return false;
-                // }
-              }
-              index++;
-          }
-          thisBlock = thisBlock + MIN_LEASE_DURATION; // If we have a mimimum lease duration, we need to increment thisBlock by that much
+                index++;
+            }
+            thisBlock = thisBlock + MIN_LEASE_DURATION; // If we have a mimimum lease duration, we need to increment thisBlock by that much
         }
-      return true;
+        return true;
     }
-
 
     function lease(
         uint256 _tokenId,
@@ -137,25 +141,24 @@ function isLeaseAvailable(uint256 _tokenId, uint256 _start,
         }
 
         //AAAAAAAAAAAAAABBBBBBBBBCCCCCC-------------DDDDDDDEEEEEEEEFFFFFFFFF
-      
 
         uint256 thisBlock = _start;
         bool isOk = true;
-        if(_start > lastEndTimeByToken[_tokenId]) {
-            return true 
+        if (_start > lastEndTimeByToken[_tokenId]) {
+            return true;
         }
         while (thisBlock <= _end) {
-          uint256 index = 0;
-          while(index < terms.length) {
-              if (thisBlock >= terms[index].startTime) {
-                if(thisBlock <= terms[index].endTime) {
-                    isOk = false;
-                    break;
+            uint256 index = 0;
+            while (index < terms.length) {
+                if (thisBlock >= terms[index].startTime) {
+                    if (thisBlock <= terms[index].endTime) {
+                        isOk = false;
+                        break;
+                    }
+                    thisBlock = terms[index].endTime + 1;
                 }
-                thisBlock = terms[index].endTime + 1;
-              }
-              index++;
-          }
+                index++;
+            }
         }
         for (uint256 i = 0; i < terms.length; i++) {
             if (terms[i].startTime <= _start && _start <= terms[i].endTime) {
@@ -168,10 +171,6 @@ function isLeaseAvailable(uint256 _tokenId, uint256 _start,
 
         require(lesseeOf(_tokenId, _start) == address(0));
         require(lesseeOf(_tokenId, _end) == address(0));
-        
-
-
-
 
         require(_end > _start);
         require(_end - _start <= MAX_LEASE_DURATION);
@@ -220,7 +219,7 @@ function isLeaseAvailable(uint256 _tokenId, uint256 _start,
         // // Check if the caller has enough allowance
         // require(allowance(msg.sender, address(this)) >= _end -
 
-        if(_end > lastEndTimeByToken[_tokenId]) {
+        if (_end > lastEndTimeByToken[_tokenId]) {
             lastEndTimeByToken[_tokenId] = _end;
         }
     }

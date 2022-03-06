@@ -12,25 +12,6 @@ import "contracts/TimeLimitedToken.sol";
 contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     constructor() ERC721("Lease", "LEASE") {}
 
-    // event AssetCreated(address indexed _from, string _tokenURI);
-
-    // event Leased(
-    //     uint256 indexed _tokenId,
-    //     address indexed _lessee,
-    //     uint256 _start,
-    //     uint256 _end
-    // );
-
-    // event LeaseTransferred(
-    //     uint256 indexed _tokenId,
-    //     address indexed _lessee,
-    //     address indexed _addressTo,
-    //     uint256 _start,
-    //     uint256 _end
-    // );
-
-    // event LeaseCancelled(uint256 indexed _tokenId, address indexed _lessee);
-
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -38,13 +19,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     uint256 public constant TIME_START = 1640970000; // Jan-1-22
     uint256 public constant MAX_DURATION = 60 days; // 60 days
     uint256 public constant MIN_DURATION = 1 days; // 1 day in 30s blocks, or 86400 for days
-    // an array of tokens
-    // struct Term {
-    //     address lessee;
-    //     uint256 tokenId;
-    //     uint256 startTime;
-    //     uint256 endTime;
-    // }
+    bool public constant TIMESTAMP = false; // Use timestamp instead of block number
 
     // A mapping by tokenId to a mapping of startTime to term
     mapping(uint256 => Term[]) public leasesByToken;
@@ -69,16 +44,29 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 _end
     );
 
-    function MAX_LEASE_DURATION() external view returns (uint256) {
+    function MAX_LEASE_DURATION() external view override returns (uint256) {
         return MAX_DURATION;
     }
 
-    function MIN_LEASE_DURATION() external view returns (uint256) {
+    function MIN_LEASE_DURATION() external view override returns (uint256) {
         return MIN_DURATION;
     }
 
+    function USE_TIMESTAMP() external pure override returns (bool) {
+        return TIMESTAMP;
+    }
+
     function lesseeOf(uint256 _tokenId, uint256 _date)
-        public
+        external
+        view
+        override
+        returns (address)
+    {
+        _lesseeOf(_tokenId, _date);
+    }
+
+    function _lesseeOf(uint256 _tokenId, uint256 _date)
+        internal
         view
         returns (address)
     {
@@ -99,7 +87,16 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     }
 
     function getLease(uint256 _tokenId, uint256 _date)
-        public
+        external
+        view
+        override
+        returns (Term memory)
+    {
+        _getLease(_tokenId, _date);
+    }
+
+    function _getLease(uint256 _tokenId, uint256 _date)
+        internal
         view
         returns (Term memory)
     {
@@ -119,9 +116,23 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         return terms[0];
     }
 
-    function getLeases(uint256 _tokenId) external view returns (Term[] memory) {
+    function getLeases(uint256 _tokenId)
+        external
+        view
+        override
+        returns (Term[] memory)
+    {
         require(_tokenId != 0);
         return leasesByToken[_tokenId];
+    }
+
+    function getLeases(address _address)
+        external
+        view
+        override
+        returns (Term[] memory)
+    {
+        require(false, "Todo");
     }
 
     function getLeaseEnd(uint256 _tokenId, uint256 _date)
@@ -129,7 +140,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         view
         returns (uint256)
     {
-        Term memory term = getLease(_tokenId, _date);
+        Term memory term = _getLease(_tokenId, _date);
         if (term.endTime == 0) {
             return 0;
         }
@@ -140,7 +151,15 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) public view returns (bool) {
+    ) external view override returns (bool) {
+        return _isLeaseAvailable(_tokenId, _start, _end);
+    }
+
+    function _isLeaseAvailable(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal view returns (bool) {
         // if (_now == 0) {
         //     _now = block.timestamp;
         // }
@@ -174,10 +193,32 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     }
 
     function lease(
+        address _addressTo,
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) public {
+    ) external override {
+        require(_addressTo == msg.sender);
+        _lease(_addressTo, _tokenId, _start, _end);
+    }
+
+    function lease(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end,
+        bytes memory _data
+    ) external override {
+        require(_addressTo == msg.sender);
+        _lease(_addressTo, _tokenId, _start, _end);
+    }
+
+    function _lease(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal {
         require(_end > _start);
         require(
             _end.sub(_start).mul(86400) <= MAX_DURATION,
@@ -196,12 +237,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         Term[] memory terms = leasesByToken[_tokenId];
 
         if (terms.length != 0) {
-            leaseAvailable = isLeaseAvailable(
-                _tokenId,
-                _start,
-                _end,
-                block.timestamp
-            );
+            leaseAvailable = _isLeaseAvailable(_tokenId, _start, _end);
             require(leaseAvailable, "Lease not available");
         }
 
@@ -221,7 +257,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
                 lastEndTimeByToken[_tokenId] = _end;
             }
         }
-        emit Leased(_tokenId, msg.sender, _start, _end);
+        emit Leased(_tokenId, _addressTo, _start, _end);
     }
 
     function leaseOnTransfer(
@@ -238,7 +274,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
             "Lease duration is too long"
         );
         require(
-            _end.sub(_start).mul(86400) >= MIN_LEASE_DURATION(),
+            _end.sub(_start).mul(86400) >= MIN_DURATION,
             "Lease duration is too short"
         );
         require(_tokenId != 0);
@@ -250,12 +286,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         Term[] memory terms = leasesByToken[_tokenId];
 
         if (terms.length != 0) {
-            leaseGood = isLeaseAvailable(
-                _tokenId,
-                _start,
-                _end,
-                block.timestamp
-            );
+            leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
         }
 
         uint256 startDate = _start.mul(1 days).add(TIME_START);
@@ -278,16 +309,16 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
             uint256 newEnd = _end.add(1);
 
             if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
-                lease(_tokenId, newEnd, oldEnd);
+                _lease(_addressTo, _tokenId, newEnd, oldEnd);
             }
 
             if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
                 console.log(oldStart, newStart);
-                lease(_tokenId, oldStart, newStart);
+                _lease(_addressTo, _tokenId, oldStart, newStart);
             }
             if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
-                lease(_tokenId, oldStart, newStart);
-                lease(_tokenId, newEnd, oldEnd);
+                _lease(_addressTo, _tokenId, oldStart, newStart);
+                _lease(_addressTo, _tokenId, newEnd, oldEnd);
             }
         }
     }
@@ -302,7 +333,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         require(_end != 0, "End date cannot be zero");
         require(_start < _end, "Start date must be before end date");
 
-        Term memory term = getLease(
+        Term memory term = _getLease(
             _tokenId,
             _start.mul(86400).add(TIME_START)
         );
@@ -319,7 +350,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 oldStartDays = term.startTime.sub(TIME_START).div(86400);
         uint256 oldEndDays = term.endTime.sub(TIME_START).div(86400);
 
-        unlease(_tokenId, oldStartDays, oldEndDays);
+        _unlease(_tokenId, oldStartDays, oldEndDays);
         leaseOnTransfer(_tokenId, _start, _end, _addressTo, oldStart, oldEnd);
     }
 
@@ -327,13 +358,30 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) public payable {
+    ) external override {
+        _unlease(_tokenId, _start, _end);
+    }
+
+    function unlease(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end,
+        bytes memory
+    ) external override {
+        _unlease(_tokenId, _start, _end);
+    }
+
+    function _unlease(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal {
         require(
             leasesByToken[_tokenId].length > 0,
             "No terms exist for this lease"
         );
 
-        address lessee = lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
         require(
             lessee == msg.sender,
             "Address does not have rights to this lease"
@@ -350,7 +398,7 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
             daysTaken[_tokenId][i] = false;
         }
 
-        emit Unleased(_tokenId, msg.sender);
+        emit Unleased(_tokenId, msg.sender, _start, _end);
     }
 
     function mintAsset(
@@ -394,27 +442,34 @@ contract ERC721LeaseBase is ERC721URIStorage, TimeLimitedToken {
     // Adding functions that have been defined in the interface but not defined in the contract yet
 
     function approveLease(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        address _addressTo
-    ) external {}
+        address,
+        uint256,
+        uint256,
+        uint256
+    ) external pure override {
+        require(false, "approveLease isnt implemented yet!");
+    }
 
-    function getLeaseApproved(uint256 _tokenId)
-        external
-        view
-        returns (address)
-    {}
+    function getLeaseApproved(
+        uint256,
+        uint256,
+        uint256
+    ) external pure override returns (address) {
+        require(false, "getLeaseApproved isnt implemented yet!");
+        return address(0);
+    }
 
-    function setLeaseApprovalForAll(address _operator, bool _approved)
-        external
-    {}
+    function setLeaseApprovalForAll(address, bool) external pure override {
+        require(false, "setLeaseApprovalForAll isnt implemented yet!");
+    }
 
-    function isLeaseApprovedForall(address _owner, address _operator)
+    function isLeaseApprovedForall(address, address)
         external
-        view
+        pure
+        override
         returns (bool)
-    {}
-
-    function USE_TIMESTAMP() external pure returns (bool) {}
+    {
+        require(false, "isLeaseApprovedForall isnt implemented yet!");
+        return false;
+    }
 }

@@ -91,11 +91,11 @@ interface TimeLimitedToken {
     /// @param _data Additional data with no specified format, sent in call to `_to`
     function lease(
         address _addressTo,
-        uint256 tokenId,
+        uint256 _tokenId,
         uint256 _start,
         uint256 _end,
         bytes memory _data
-    ) external payable;
+    ) external;
 
     /// @notice This function transfers the lease from the owner/current lessee/_operator to another
     /// address for a certain token for a given time frame
@@ -105,10 +105,10 @@ interface TimeLimitedToken {
     /// @param _end is the end time of the lease
     function lease(
         address _addressTo,
-        uint256 tokenId,
+        uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) external payable;
+    ) external;
 
     /// @notice This function unleases a token for the duration specified
     /// @dev LeaseCancelled event is emitted
@@ -121,7 +121,7 @@ interface TimeLimitedToken {
         uint256 _start,
         uint256 _end,
         bytes memory _data
-    ) external payable;
+    ) external;
 
     /// @notice This function unleases a token for the duration specified
     /// @dev LeaseCancelled event is emitted, Calling this version of unlease
@@ -133,7 +133,7 @@ interface TimeLimitedToken {
         uint256 _tokenId,
         uint256 _start,
         uint256 _end
-    ) external payable;
+    ) external;
 
     /// @notice This function returns the maximum lease duration set
     /// @return Maximum lease duration
