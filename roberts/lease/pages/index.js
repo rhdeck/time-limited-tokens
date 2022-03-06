@@ -267,13 +267,13 @@ const App = () => {
                   <div className="flex justify-center">
                     <button
                       onClick={() => lease(token.id)}
-                      className="buttonThree"
+                      className="button"
                     >
                       Lease
                     </button>
                     <button
                       onClick={() => unlease(token.id)}
-                      className="buttonTwo"
+                      className="button"
                     >
                       Unlease
                     </button>
