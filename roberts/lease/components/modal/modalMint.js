@@ -124,7 +124,7 @@ let instance;
                 type="text"
                 name="name"
                 onChange={handleChange}
-                className="w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+                className="w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                 required
               />
               <label className="mr-2 text-blue-900">Description</label>
@@ -134,7 +134,7 @@ let instance;
                 name="description"
                 onChange={handleChange}
                 required
-                className="w-full mb-2 h-16 px-3 py-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline"
+                className="w-full h-16 px-3 py-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline"
               ></textarea>
             </div>
             <label className="mr-2 text-blue-900">IPFS CID or URL</label>
@@ -144,7 +144,7 @@ let instance;
               name="linkurl"
               placeholder="e.g. QmZ5gziL... or https://gateway.pinata.cloud/ipfs/QmZ5gziL..."
               onChange={handleChange}
-              className="w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+              className="w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
               required
             />
           </Modal.Body>

@@ -255,7 +255,7 @@ const App = () => {
                     name="dateOne"
                     placeholder="Start Date"
                     onChange={handleChange}
-                    className="w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+                    className="w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                     required
                   />
                   <label className="mr-2 text-blue-900">End Date</label>
@@ -265,7 +265,7 @@ const App = () => {
                     name="dateTwo"
                     placeholder="End Date"
                     onChange={handleChange}
-                    className="w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+                    className="w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                     required
                   />
                   <div className="flex justify-center">
@@ -291,7 +291,7 @@ const App = () => {
                     name="wallet"
                     placeholder="Wallet Address 0x..."
                     onChange={handleChange}
-                    className="inline-block w-full h-10 px-3 mb-2 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+                    className="inline-block w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                   />
                 </div>
               </div>
