@@ -14,8 +14,8 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const AkshayLease = await hre.ethers.getContractFactory("AkshayLease");
-  const lease = await AkshayLease.deploy();
+  const Lease = await hre.ethers.getContractFactory("TimeLimitedToken");
+  const lease = await Lease.deploy();
 
   await lease.deployed();
 
