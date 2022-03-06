@@ -11,8 +11,8 @@ import { ethers } from "ethers";
 const context = createContext({});
 const { Provider } = context;
 export const useEtherizer = () => {
-  const { isConnected } = useContext(context);
-  return { isConnected };
+  const stuff = useContext(context);
+  return stuff;
 };
 const Etherizer = ({ children }) => {
   const [hasEthereum, setHasEthereum] = useState(false);
@@ -32,6 +32,11 @@ const Etherizer = ({ children }) => {
           if (accounts && accounts.length !== 0) {
             console.log("I have accounts");
             setIsConnected(true);
+            const p = new ethers.providers.Web3Provider(window.ethereum);
+            console.log("I have a provider", p);
+            setProvider(p);
+            console.log("I have a provider now", p);
+            setSigner(p.getSigner());
           }
         }
       }
@@ -54,7 +59,7 @@ const Etherizer = ({ children }) => {
       setIsConnecting(true);
       try {
         const web3Modal = new Web3Modal({
-          network: "mainnet", // optional
+          network: network, // optional
           cacheProvider: true, // optional
           providerOptions, // required
         });
@@ -75,9 +80,10 @@ const Etherizer = ({ children }) => {
     })();
   }, []);
   const disconnect = useCallback(async () => {
-    console.log("NOOOOOOOOOOO");
-    await window.web3.eth.currentProvider.disconnect();
-    setIsConnected(false);
+    console.log("Disconnect This does not work");
+    // await provider.request({method: "wallet_requestPermissions"})
+    // await provider.disconnect();
+    // setIsConnected(false);
   }, [provider]);
   const value = useMemo(() => {
     return { isConnected, provider, signer, disconnect };
