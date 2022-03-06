@@ -21,15 +21,21 @@ const Etherizer = ({ children }) => {
   const [provider, setProvider] = useState();
   const [signer, getSigner] = useState();
   useEffect(() => {
-    console.log("Window is ", window);
-    if (window && window.ethereum) {
-      console.log("I am so happy", window.ethereum);
-      setHasEthereum(true);
-      if (window.ethereum.isConnected()) {
-        console.log("I is connected");
-        setIsConnected(true);
+    (async () => {
+      console.log("Window is ", window);
+      if (window && window.ethereum) {
+        console.log("I am so happy", window.ethereum);
+        setHasEthereum(true);
+        if (window.ethereum.isConnected()) {
+          console.log("I is connected");
+
+          const accounts = await ethereum.request({ method: "eth_accounts" });
+          if (accounts && accounts.length !== 0) {
+            setIsConnected(true);
+          }
+        }
       }
-    }
+    })();
   }, []);
   const providerOptions = {
     injected: {
