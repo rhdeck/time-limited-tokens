@@ -45,36 +45,30 @@ function MainHeader() {
     <>
       <div className="bold backgroundHeader headertext w-screen">
         <Navbar expand="xl">
-          <div className="sm:flex justify-start mb-3">
-            <Link href="/">
-              <a className="text-4xl no-underline px-1 font-Lily headertext hover:text-blue-300 sm:mb-0 mb-2">
-                LeaseIt
-              </a>
-            </Link>
-            <Link href="/">
-              <a className="inline-block text-xl no-underline pl-5 headertext hover:text-blue-300 pt-2">
-                Home
-              </a>
-            </Link>
-            <Link href="/mylist">
-              <a className=" inline-block text-xl no-underline px-3 headertext hover:text-blue-300 pt-2">
-                My Leases
-              </a>
-            </Link>
-          </div>
-          <div className="flex">
-            {currentAccount ? (
-              <Fragment>
-                <h6 className="text-lg mt-auto overflow-hidden truncate w-72 headertext">
-                  Connected to: {currentAccount}{" "}
-                </h6>
-                {/* {disconnect && (
-                  <button onClick={() => disconnect()}>Disconnect</button>
-                )} */}
-              </Fragment>
-            ) : (
-              ""
-            )}
+          <div className="sm:flex justify-between items-center mb-3 w-full">
+            <div className="sm:flex justify-start">
+              <Link href="/">
+                <div>
+                  <a className="block text-2xl no-underline px-1 font-Lily headertext hover:text-blue-300 -mb-2">
+                    Air3-n-B
+                  </a>
+                  <div className="italic ml-2">by leaseit</div>
+                </div>
+              </Link>
+              <Link href="/">
+                <a className="inline-block text-xl no-underline pl-5 headertext hover:text-blue-300 pt-2">
+                  Home
+                </a>
+              </Link>
+              <Link href="/mylist">
+                <a className=" inline-block text-xl no-underline px-3 headertext hover:text-blue-300 pt-2">
+                  My Leases
+                </a>
+              </Link>
+            </div>
+            <div className="align-right inline-block text-xl no-underline px-3 headertext pt-2">
+              Wallet: {currentAccount.substring(0, 6)}...
+            </div>
           </div>
         </Navbar>
       </div>

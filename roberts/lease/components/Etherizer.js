@@ -114,11 +114,11 @@ const Etherizer = ({ children }) => {
           }}
         >
           <h1
+            className="font-Lily"
             style={{
               fontSize: "3em",
               textAlign: "center",
               fontWeight: "bolder",
-              fontFamily: "Arial Black",
             }}
           >
             Air (Web)3-n-B(lockchain)
