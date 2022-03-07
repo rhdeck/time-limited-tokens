@@ -97,14 +97,58 @@ const Etherizer = ({ children }) => {
         style={{
           display: "flex",
           width: "100vw",
-          height: "100vw",
+          height: "100vh",
           justifyContent: "center",
           alignItems: "center",
+          flexDirection: "column",
+          backgroundImage: "linear-gradient(to top right, blue, pink)",
         }}
       >
+        <div
+          style={{
+            marginBottom: "50px",
+            width: "50vw",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <h1
+            className="font-Lily"
+            style={{
+              fontSize: "3em",
+              textAlign: "center",
+              fontWeight: "bolder",
+            }}
+          >
+            Air (Web)3-n-B(lockchain)
+          </h1>
+        </div>
         <button onClick={connect} className="button" disabled={isConnecting}>
           {isConnecting ? "Connecting..." : "Connect to Mumbai"}
         </button>
+        <div
+          style={{
+            marginTop: "50px",
+            width: "50vw",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <h2
+            style={{
+              textAlign: "center",
+              fontWeight: "bolder",
+              fontFamily: "Arial Black",
+              bottom: 0,
+              position: "static",
+            }}
+          >
+            Demonstration for Time Limited Tokens
+          </h2>
+          <h3 style={{ textAlign: "center" }}>Release your apes</h3>
+        </div>
       </div>
     );
   } else {

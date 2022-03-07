@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import React, { Component } from "react";
 import { useState } from "react";
 import { ethers } from "ethers";
-import abi from "../../src/utils/Lease.json";
+import abi from "../../abi/TimeLimitedToken.json";
 
 function ModalMint(props) {
   let loader;
@@ -18,7 +18,7 @@ let instance;
   if (ethereum && currentAccount) {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
-  const dappAddress = "0x5f137a4A20603DdC0DE1d7153FC564d8FeffD530";
+  const dappAddress = "0x22923Be5ac27f9B3D53811e59C2D52C9ef6aBE83";
   instance = new ethers.Contract(dappAddress, abi.abi, signer);
 }
 }

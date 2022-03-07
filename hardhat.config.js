@@ -31,5 +31,10 @@ module.exports = {
   },
   contractSizer: {
     runOnCompile:true
+  },
+  etherscan:{
+    apiKey:{
+      polygonMumbai: process.env.POLYGON_API
+    }
   }
 };

@@ -7,7 +7,7 @@ import ModalMint from "../components/modal/modalMint";
 import ModalAccess from "../components/modal/modalAccess";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from "web3modal";
-import thisABI from "../../../artifacts/contracts/TimeLimitedToken.sol/TimeLimitedToken.json";
+import thisABI from "../abi/TimeLimitedToken.json";
 import { useEtherizer } from "./../components/Etherizer";
 import { ethers } from "ethers";
 // import {
