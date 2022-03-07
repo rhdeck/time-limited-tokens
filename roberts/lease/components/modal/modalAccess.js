@@ -15,7 +15,7 @@ let instance;
   let access;
   const getAccess = async () => {
     let dateNow = Math.round(Date.now() / 1000);
-    let dateStart = await instance.TIME_START();
+    let dateStart = await instance.TIME_START;
     dateNow = Number(dateNow);
     dateStart = Number(dateStart);
     const check = Math.round((dateNow-dateStart)/86400);

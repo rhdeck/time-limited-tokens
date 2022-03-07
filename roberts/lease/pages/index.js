@@ -143,10 +143,12 @@ const App = () => {
   }
 
   const getAllAssets = useCallback(async () => {
+    console.log("getallassets is running.");
     let assets = [];
     if (currentAccount) {
       for (let i = 1; i < 100000; i++) {
         try {
+          console.log("Instance is :",instanceOne);
           const asset = await instanceOne.getAssets(i);
           const uri = Buffer.from(asset.substring(29), "base64").toString();
           const tokenDetails = JSON.parse(uri);
@@ -164,7 +166,7 @@ const App = () => {
   const lease = async (id) => {
     let dates1 = Number(convertDate(formData.dateOne));
     let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START();
+    let dateStart = await instanceOne.TIME_START;
     dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
@@ -179,7 +181,8 @@ const App = () => {
   const transferLease = async (id) => {
     let dates1 = Number(convertDate(formData.dateOne));
     let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START();
+    let dateStart = await instanceOne.TIME_START;
+    console.log("Date Start is : ", dateStart);
     dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
@@ -192,15 +195,17 @@ const App = () => {
   };
 
   const unlease = async (id) => {
+
+    console.log("entering unlease");
     let dates1 = Number(convertDate(formData.dateOne));
     let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START();
+    let dateStart = await instanceOne.TIME_START;
     dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.transferLease(id, dates1, dates2, '0x0'); //check how to transfer to address 0
+      await instanceOne.unlease(id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }
