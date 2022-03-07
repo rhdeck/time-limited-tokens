@@ -24,8 +24,8 @@ const App = () => {
   console.log("GM");
   const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
   // const provider = new ethers.providers.InfuraProvider();
-  const thisContract = "0xB6ba57688B4f1c66052AdF245d89A928ccAb988b";
-  const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
+  const thisContract = "0x812F5575dB0FD5a1c915e986B3dda139D4Bbd490";
+  const instance = new ethers.Contract(thisContract, thisABI, provider);
   const [currentAccount, setCurrentAccount] = useState();
   const [loading, setLoading] = useState(false);
   const [instanceOne, setInstanceOne] = useState(instance);
@@ -101,10 +101,11 @@ const App = () => {
       if (accounts.length !== 0) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
+        console.log("signer: ", signer)
         const dappAddress = thisContract;
         const instanceTwo = new ethers.Contract(
           dappAddress,
-          thisABI.abi,
+          thisABI,
           signer
         );
         setInstanceOne(instanceTwo);
