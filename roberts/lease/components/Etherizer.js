@@ -106,7 +106,7 @@ const Etherizer = ({ children }) => {
       >
         <div
           style={{
-            marginTop: "50px",
+            marginBottom: "50px",
             width: "50vw",
             flexDirection: "column",
             justifyContent: "center",
@@ -115,6 +115,7 @@ const Etherizer = ({ children }) => {
         >
           <h1
             style={{
+              fontSize: "3em",
               textAlign: "center",
               fontWeight: "bolder",
               fontFamily: "Arial Black",
