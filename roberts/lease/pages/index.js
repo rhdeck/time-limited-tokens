@@ -164,6 +164,7 @@ const App = () => {
   }, [currentAccount, instanceOne]);
 
   const lease = async (id) => {
+    console.log("instance one: ", instanceOne);
     let dates1 = Number(convertDate(formData.dateOne));
     let dates2 = Number(convertDate(formData.dateTwo));
     let dateStart = await instanceOne.TIME_START;
@@ -253,7 +254,7 @@ const App = () => {
                 <p className="text-md text-gray-400 mt-4">
                   {token.description}
                 </p>
-                {/* <ModalAccess id={token.id} account={currentAccount} /> */}
+                <ModalAccess id={token.id} account={currentAccount} />
                 <div>
                   <label className="mr-2 text-blue-900">Start Date</label>
                   <input
