@@ -97,7 +97,7 @@ const Etherizer = ({ children }) => {
         style={{
           display: "flex",
           width: "100vw",
-          height: "100vw",
+          height: "100vh",
           justifyContent: "center",
           alignItems: "center",
         }}
