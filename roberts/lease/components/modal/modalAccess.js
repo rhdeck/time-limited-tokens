@@ -19,7 +19,13 @@ let instance;
     dateNow = Number(dateNow);
     dateStart = Number(dateStart);
     const check = Math.round((dateNow-dateStart)/86400);
-    const lessee = await instance.lesseeOf(id,check);
+    let lessee;
+    try {
+    lessee = await instance.lesseeOf(id,check);
+    } catch (err) {
+      console.log(err.message);
+    }
+
 
     if (lessee == account) {
       access = true;

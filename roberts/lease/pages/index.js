@@ -181,6 +181,7 @@ const App = () => {
   const transferLease = async (id) => {
     let dates1 = Number(convertDate(formData.dateOne));
     let dates2 = Number(convertDate(formData.dateTwo));
+
     let dateStart = await instanceOne.TIME_START;
     console.log("Date Start is : ", dateStart);
     dateStart = Number(dateStart);
