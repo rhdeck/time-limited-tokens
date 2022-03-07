@@ -167,7 +167,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         if (term.startTime == 0) {
             return 0;
         }
-        return term.endTime;
+        return term.startTime;
     }
 
     function isLeaseAvailable(
@@ -212,7 +212,6 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) external override {
-        require(_addressTo == msg.sender);
         _lease(_addressTo, _tokenId, _start, _end);
     }
 
@@ -223,7 +222,6 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _end,
         bytes memory _data
     ) external override {
-        require(_addressTo == msg.sender);
         _lease(_addressTo, _tokenId, _start, _end);
     }
 
@@ -258,9 +256,9 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             }
 
             leasesByToken[_tokenId].push(
-                Term(msg.sender, _tokenId, startDate, endDate)
+                Term(_addressTo, _tokenId, startDate, endDate)
             );
-            leasesByAddress[msg.sender][_tokenId].push(terms.length);
+
             if (lastEndTimeByToken[_tokenId] < _end) {
                 lastEndTimeByToken[_tokenId] = _end;
             }
@@ -291,36 +289,27 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
         }
 
-        uint256 startDate = _start.mul(1 days).add(TIME_START);
-        uint256 endDate = _end.mul(1 days).add(TIME_START);
-
         uint256 oldStart = _oldStart.sub(TIME_START).div(86400);
         uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
 
         if (leaseGood) {
-            for (uint256 i = _start; i <= _end; i++) {
-                daysTaken[_tokenId][i] = true;
-            }
 
-            leasesByToken[_tokenId].push(
-                Term(_addressTo, _tokenId, startDate, endDate)
-            );
-            leasesByAddress[_addressTo][_tokenId].push(terms.length);
+            _lease(_addressTo, _tokenId, _start, _end);
 
             uint256 newStart = _start.sub(1);
             uint256 newEnd = _end.add(1);
 
             if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
-                _lease(_addressTo, _tokenId, newEnd, oldEnd);
+                _lease(msg.sender, _tokenId, newEnd, oldEnd);
             }
 
             if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
-                // console.log(oldStart, newStart);
-                _lease(_addressTo, _tokenId, oldStart, newStart);
+
+                _lease(msg.sender, _tokenId, oldStart, newStart);
             }
             if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
-                _lease(_addressTo, _tokenId, oldStart, newStart);
-                _lease(_addressTo, _tokenId, newEnd, oldEnd);
+                _lease(msg.sender, _tokenId, oldStart, newStart);
+                _lease(msg.sender, _tokenId, newEnd, oldEnd);
             }
         }
     }
@@ -380,17 +369,16 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
         require(lessee == msg.sender);
 
-        uint256[] memory leases = leasesByAddress[msg.sender][_tokenId];
-
         uint256 tempStart = getLeaseStart(_tokenId, _start);
         uint256 tempEnd = _getLeaseEnd(_tokenId, _start);
+        uint256 dayStart = tempStart.sub(TIME_START).div(86400);
+        uint256 dayEnd = tempEnd.sub(TIME_START).div(86400);
 
-        for (uint256 i = 0; i < leases.length; i++) {
-            if (leasesByToken[_tokenId][leases[i]].startTime == tempStart) {
-                delete leasesByToken[_tokenId][leases[i]];
-                leasesByAddress[msg.sender][_tokenId][i] = 0;
-                for (uint256 i = tempStart; i <= tempEnd; i++) {
-                    daysTaken[_tokenId][i] = false;
+        for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
+            if (leasesByToken[_tokenId][i].startTime == tempStart) {
+                delete leasesByToken[_tokenId][i];
+                for (uint256 j = dayStart; j <= dayEnd; j++) {
+                    daysTaken[_tokenId][j] = false;
                 }
             }
         }
