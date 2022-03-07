@@ -19,7 +19,13 @@ let instance;
     dateNow = Number(dateNow);
     dateStart = Number(dateStart);
     const check = Math.round((dateNow-dateStart)/86400);
-    const lessee = await instance.lesseeOf(id,check);
+    let lessee;
+    try {
+    lessee = await instance.lesseeOf(id,check);
+    } catch (err) {
+      console.log(err.message);
+    }
+
 
     if (lessee == account) {
       access = true;
@@ -34,8 +40,8 @@ let instance;
     if (ethereum && account) {
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
-    const dappAddress = "0xB6ba57688B4f1c66052AdF245d89A928ccAb988b";
-    instance = new ethers.Contract(dappAddress, abi.abi, signer);
+    const dappAddress = "0x812F5575dB0FD5a1c915e986B3dda139D4Bbd490";
+    instance = new ethers.Contract(dappAddress, abi, signer);
     getAccess()
   }
   }
