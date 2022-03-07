@@ -18,7 +18,7 @@ let instance;
   if (ethereum && currentAccount) {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
-  const dappAddress = "0x22923Be5ac27f9B3D53811e59C2D52C9ef6aBE83";
+  const dappAddress = "0xB6ba57688B4f1c66052AdF245d89A928ccAb988b";
   instance = new ethers.Contract(dappAddress, abi.abi, signer);
 }
 }

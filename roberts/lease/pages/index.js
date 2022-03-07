@@ -24,7 +24,7 @@ const App = () => {
   console.log("GM");
   const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
   // const provider = new ethers.providers.InfuraProvider();
-  const thisContract = "0x22923Be5ac27f9B3D53811e59C2D52C9ef6aBE83";
+  const thisContract = "0xB6ba57688B4f1c66052AdF245d89A928ccAb988b";
   const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
   const [currentAccount, setCurrentAccount] = useState();
   const [loading, setLoading] = useState(false);
