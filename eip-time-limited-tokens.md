@@ -3,7 +3,7 @@ eip: <to be assigned>
 title: Time-Limited Tokens
 description: Expressing and transferring leases to deeds
 author: Naiyoma Aurelia ([@naiyoma](https://github.com/naiyoma)), Ray Deck ([@rhdeck](https://github.com/rhdeck)), Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja)), Robert Reinhart ([@robertreinhart](https://github.com/robertreinhart)) and Radek Sienkiewicz ([@sabon](https://github.com/sabon))
-discussions-to: https://github.com/rhdeck/temporary-nfts
+discussions-to: https://github.com/rhdeck/time-limited-tokens/issues
 status: Draft
 type: Standards
 category (*only required for Standards Track): ERC
