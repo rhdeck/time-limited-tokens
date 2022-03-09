@@ -13,7 +13,7 @@ requires: 165
 
 ## Simple Summary
 
-This standard describes a simple, supple interface for expressing and transferringtime-limited rights or obligations, also known as leases. 
+This standard describes a simple, supple interface for expressing and transferring time-limited rights or obligations, also known as leases. 
 
 ## Motivation
 Time is the ultimate scarce resource. We have less of it every second. Time slicing is critical to ideas of fractional possession - allocating rights for a finite period allows resources to generate more value for more humans without requiring their growth or change.

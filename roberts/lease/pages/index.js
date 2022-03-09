@@ -33,7 +33,7 @@ const App = () => {
 
   const convertDate = (date) => {
     const myDate = new Date(date);
-    const myEpoch = myDate.getTime() / 1000.0;
+    const myEpoch = myDate.valueOf() / 1000.0;
     return myEpoch;
   };
 
@@ -166,32 +166,40 @@ const App = () => {
 
   const lease = async (id) => {
     console.log("instance one: ", instanceOne);
-    let dates1 = Number(convertDate(formData.dateOne));
-    let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START;
-    dateStart = Number(dateStart);
+    let dates1 = convertDate(formData.dateOne);
+    let dates2 = convertDate(formData.dateTwo);
+    console.log("date1 is : ",dates1);
+    // let dates1 = Number(convertDate(formData.dateOne));
+    // let dates2 = Number(convertDate(formData.dateTwo));
+    let dateStart = await instanceOne.TIME_START();
+    console.log("Time start is: ", dateStart);
+    // dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
-
+    console.log("Works till here");
     try {
-      await instanceOne.lease(currentAccount, id, dates1, dates2);
+      console.log("some details: ", currentAccount,id, dates1, dates2);
+      await instanceOne["lease(address,uint256,uint256,uint256)"](currentAccount, id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }
   };
 
   const transferLease = async (id) => {
-    let dates1 = Number(convertDate(formData.dateOne));
-    let dates2 = Number(convertDate(formData.dateTwo));
+    // let dates1 = Number(convertDate(formData.dateOne));
+    // let dates2 = Number(convertDate(formData.dateTwo));
 
-    let dateStart = await instanceOne.TIME_START;
+    let dates1 = convertDate(formData.dateOne);
+    let dates2 = convertDate(formData.dateTwo);
+
+    let dateStart = await instanceOne.TIME_START();
     console.log("Date Start is : ", dateStart);
-    dateStart = Number(dateStart);
+    // dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.transferLease(id, dates1, dates2, formData.wallet);
+      await instanceOne["transferLease(uint256,uint256,uint256,address)"](id, dates1, dates2, formData.wallet);
     } catch (err) {
       console.log(err.message);
     }
@@ -200,15 +208,18 @@ const App = () => {
   const unlease = async (id) => {
 
     console.log("entering unlease");
-    let dates1 = Number(convertDate(formData.dateOne));
-    let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START;
-    dateStart = Number(dateStart);
+    // let dates1 = Number(convertDate(formData.dateOne));
+    // let dates2 = Number(convertDate(formData.dateTwo));
+    let dates1 = convertDate(formData.dateOne);
+    let dates2 = convertDate(formData.dateTwo);
+
+    let dateStart = await instanceOne.TIME_START();
+    // dateStart = Number(dateStart);
     dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
     dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
-      await instanceOne.unlease(id, dates1, dates2);
+      await instanceOne["unlease(uint256,uint256,uint256)"](id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }

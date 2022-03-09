@@ -293,7 +293,6 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
 
         if (leaseGood) {
-
             _lease(_addressTo, _tokenId, _start, _end);
 
             uint256 newStart = _start.sub(1);
@@ -304,7 +303,6 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             }
 
             if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
-
                 _lease(msg.sender, _tokenId, oldStart, newStart);
             }
             if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
