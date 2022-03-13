@@ -1,30 +1,31 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Lily+Script+One&family=Meow+Script&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lily+Script+One&family=Meow+Script&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
+body {
+  @apply bg-gradient-to-r from-stone via-tahiti-900 to-stone;
+}
 .background {
-@apply bg-gradient-to-r from-stone via-tahiti-900 to-stone
+  @apply bg-gradient-to-r from-stone via-tahiti-900 to-stone;
 }
 
 .backgroundHeader {
-@apply bg-gradient-to-r from-stone via-tahiti-900 to-stone
+  @apply bg-gradient-to-r from-stone via-tahiti-900 to-stone;
 }
 
 .maintext {
-@apply text-white
+  @apply text-white;
 }
 
 .headertext {
-@apply text-white
+  @apply text-white;
 }
 
 .widgets {
-  @apply bg-gradient-to-tr from-tahiti-300 via-tahiti-200 to-tahiti-300
+  @apply bg-gradient-to-tr from-tahiti-300 via-tahiti-200 to-tahiti-300;
 }
 
 .button {
-  @apply w-auto text-lg sm:w-auto bg-tahiti-800 hover:bg-tahiti-600 text-white h-auto py-2 px-4 border-tahiti-700 hover:border-tahiti-500 rounded-xl mb-2 sm:my-3 mx-2
+  @apply w-auto text-lg sm:w-auto bg-tahiti-800 hover:bg-tahiti-600 text-white h-auto py-2 px-4 border-tahiti-700 hover:border-tahiti-500 rounded-xl mb-2 sm:my-3 mx-2;
 }

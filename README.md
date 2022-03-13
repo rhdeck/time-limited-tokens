@@ -8,6 +8,8 @@ The surging popularity of ERC721 tokens shows the opportunity for clear, simple 
 However, ERC721 and related standards do not provide functionality to enable leasing of NFTs or other assets for a specific period.
 
 That's why we devoted our hackathon period to defining a simple, supple interface for time-slicing assets and expressing who has possession as a lessee at which point in time. 
+
+[Watch the video from our Web3Con Hackathon submission](https://www.loom.com/share/6992b9306f134e9fa19ab62bac53c79c?sharedAppSource=personal_library)
 ## EIP
 Read our attached [Ethereum Improvement Proposal](./eip-time-limited-tokens.md) in `eip-time-limited-tokens.md`
 
