@@ -281,51 +281,51 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         emit Leased(_tokenId, _addressTo, _start, _end);
     }
 
-    function leaseOnTransfer(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        address _addressTo,
-        uint256 _oldStart,
-        uint256 _oldEnd
-    ) internal {
-        require(_end > _start);
-        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
-        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
-        require(_tokenId != 0);
-        require(_start != 0);
-        require(_end != 0);
+    // function leaseOnTransfer(
+    //     uint256 _tokenId,
+    //     uint256 _start,
+    //     uint256 _end,
+    //     address _addressTo,
+    //     uint256 _oldStart,
+    //     uint256 _oldEnd
+    // ) internal {
+    //     require(_end > _start);
+    //     require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+    //     require(_end.sub(_start).mul(86400) >= MIN_DURATION);
+    //     require(_tokenId != 0);
+    //     require(_start != 0);
+    //     require(_end != 0);
 
-        bool leaseGood = true;
+    //     bool leaseGood = true;
 
-        Term[] memory terms = leasesByToken[_tokenId];
+    //     Term[] memory terms = leasesByToken[_tokenId];
 
-        if (terms.length != 0) {
-            leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
-        }
+    //     if (terms.length != 0) {
+    //         leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
+    //     }
 
-        uint256 oldStart = _oldStart.sub(TIME_START).div(86400);
-        uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
+    //     uint256 oldStart = _oldStart.sub(TIME_START).div(86400);
+    //     uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
 
-        if (leaseGood) {
-            _lease(_addressTo, _tokenId, _start, _end);
+    //     if (leaseGood) {
+    //         _lease(_addressTo, _tokenId, _start, _end);
 
-            uint256 newStart = _start.sub(1);
-            uint256 newEnd = _end.add(1);
+    //         uint256 newStart = _start.sub(1);
+    //         uint256 newEnd = _end.add(1);
 
-            if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
-                _lease(msg.sender, _tokenId, newEnd, oldEnd);
-            }
+    //         if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
+    //             _lease(msg.sender, _tokenId, newEnd, oldEnd);
+    //         }
 
-            if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
-                _lease(msg.sender, _tokenId, oldStart, newStart);
-            }
-            if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
-                _lease(msg.sender, _tokenId, oldStart, newStart);
-                _lease(msg.sender, _tokenId, newEnd, oldEnd);
-            }
-        }
-    }
+    //         if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
+    //             _lease(msg.sender, _tokenId, oldStart, newStart);
+    //         }
+    //         if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
+    //             _lease(msg.sender, _tokenId, oldStart, newStart);
+    //             _lease(msg.sender, _tokenId, newEnd, oldEnd);
+    //         }
+    //     }
+    // }
 
     function transferLease(
         uint256 _tokenId,
@@ -345,14 +345,15 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(term.lessee == msg.sender);
         require(term.endTime >= _end);
 
-        uint256 oldStart = term.startTime;
-        uint256 oldEnd = term.endTime;
+        // uint256 oldStart = term.startTime;
+        // uint256 oldEnd = term.endTime;
 
-        uint256 oldStartDays = term.startTime.sub(TIME_START).div(86400);
-        uint256 oldEndDays = term.endTime.sub(TIME_START).div(86400);
+        // uint256 oldStartDays = term.startTime.sub(TIME_START).div(86400);
+        // uint256 oldEndDays = term.endTime.sub(TIME_START).div(86400);
 
-        _unlease(_tokenId, oldStartDays, oldEndDays);
-        leaseOnTransfer(_tokenId, _start, _end, _addressTo, oldStart, oldEnd);
+        _unlease(_tokenId, _start, _end);
+        // leaseOnTransfer(_tokenId, _start, _end, _addressTo, oldStart, oldEnd);
+        _makeLease(_addressTo, _tokenId, _start, _end);
     }
 
     function unlease(
@@ -408,7 +409,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
                         tempEnd
                     );
                 } else if (tempEnd == _end) {
-                    //
+                    // case when lease to unlease its end date is the same
                     _makeLease(
                         leasesByToken[_tokenId][i].lessee,
                         _tokenId,
