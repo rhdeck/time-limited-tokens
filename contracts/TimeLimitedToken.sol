@@ -246,23 +246,38 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             leaseAvailable = _isLeaseAvailable(_tokenId, _start, _end);
             require(leaseAvailable);
         }
+        _makeLease(_addressTo, _tokenId, _start, _end);
+    }
+
+    function _makeLease(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal {
+        require(_end > _start);
+        require(_end.sub(_start).mul(86400) <= MAX_DURATION);
+        require(_end.sub(_start).mul(86400) >= MIN_DURATION);
+        require(_tokenId != 0);
+        require(_start != 0);
+        require(_end != 0);
 
         uint256 startDate = _start.mul(1 days).add(TIME_START);
         uint256 endDate = _end.mul(1 days).add(TIME_START);
 
-        if (leaseAvailable) {
-            for (uint256 i = _start; i <= _end; i++) {
-                daysTaken[_tokenId][i] = true;
-            }
-
-            leasesByToken[_tokenId].push(
-                Term(_addressTo, _tokenId, startDate, endDate)
-            );
-
-            if (lastEndTimeByToken[_tokenId] < _end) {
-                lastEndTimeByToken[_tokenId] = _end;
-            }
+        // if (leaseAvailable) {
+        for (uint256 i = _start; i <= _end; i++) {
+            daysTaken[_tokenId][i] = true;
         }
+
+        leasesByToken[_tokenId].push(
+            Term(_addressTo, _tokenId, startDate, endDate)
+        );
+
+        if (lastEndTimeByToken[_tokenId] < _end) {
+            lastEndTimeByToken[_tokenId] = _end;
+        }
+        // }
         emit Leased(_tokenId, _addressTo, _start, _end);
     }
 
@@ -367,10 +382,12 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
         require(lessee == msg.sender);
 
-        uint256 tempStart = getLeaseStart(_tokenId, _start);
-        uint256 tempEnd = _getLeaseEnd(_tokenId, _start);
+        uint256 tempStart = getLeaseStart(_tokenId, _start); //old lease start
+        uint256 tempEnd = _getLeaseEnd(_tokenId, _start); //old lease end
         uint256 dayStart = tempStart.sub(TIME_START).div(86400);
         uint256 dayEnd = tempEnd.sub(TIME_START).div(86400);
+        require(_end < tempEnd + 1);
+        require(_start > tempStart - 1);
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {
@@ -378,6 +395,44 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
                 for (uint256 j = dayStart; j <= dayEnd; j++) {
                     daysTaken[_tokenId][j] = false;
                 }
+
+                if (tempStart == _start && tempEnd == _end) {
+                    // situation where we are completely unleasing the lease
+                    // NO-OP
+                } else if (tempStart == _start) {
+                    //issue a new lease from _end+1 to
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        _end + 1,
+                        tempEnd
+                    );
+                } else if (tempEnd == _end) {
+                    //
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        tempStart,
+                        _start - 1
+                    );
+                } else {
+                    // case when unleased part is in the middle of current lease
+
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        tempStart,
+                        _start - 1
+                    );
+
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        _end + 1,
+                        tempEnd
+                    );
+                }
+                break;
             }
         }
 
