@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "contracts/ITimeLimitedToken.sol";
+import "hardhat/console.sol";
 
 contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     constructor() ERC721("Lease", "LEASE") {}
@@ -65,7 +66,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         override
         returns (address)
     {
-        _lesseeOf(_tokenId, _date);
+        return _lesseeOf(_tokenId, _date);
     }
 
     function _lesseeOf(uint256 _tokenId, uint256 _date)
@@ -95,9 +96,11 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         override
         returns (Term memory)
     {
-        _getLease(_tokenId, _date);
+        return _getLease(_tokenId, _date);
     }
 
+    //this function is lying rn.
+    //TODO: return an empty term the date is not a part of an existing lease
     function _getLease(uint256 _tokenId, uint256 _date)
         internal
         view
@@ -107,9 +110,9 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_date != 0);
 
         Term[] memory terms = leasesByToken[_tokenId];
-        if (terms.length == 0) {
-            return terms[0];
-        }
+        // if (terms.length == 0) {
+        //     return terms[0];
+        // }
 
         for (uint256 i = 0; i < terms.length; i++) {
             if (terms[i].startTime <= _date && _date <= terms[i].endTime) {
@@ -186,19 +189,29 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         // if (_now == 0) {
         //     _now = block.timestamp;
         // }
+        console.log("isleaseavailable starts here");
+        console.log("start time is :", _start);
+        console.log("end time is :", _end);
+
         uint256 _now = block.timestamp;
         require(_end > _start);
         require(_end.sub(_start).mul(86400) <= MAX_DURATION);
         require(_end.sub(_start).mul(86400) >= MIN_DURATION);
         uint256 currentContractDate = (_now.sub(TIME_START)).div(86400);
+        console.log("current date is :", currentContractDate);
         require(_end >= _start);
+
         require(_start >= currentContractDate);
+        console.log("reached here");
 
         if (_start > lastEndTimeByToken[_tokenId]) {
             return true;
         }
 
         for (uint256 j = _start; j <= _end; j++) {
+            console.log("tokenid :", _tokenId);
+            console.log("j value is :", j);
+            console.log("if condidition: ", daysTaken[_tokenId][j]);
             if (daysTaken[_tokenId][j] == true) {
                 return false;
             }
@@ -238,15 +251,12 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_start != 0);
         require(_end != 0);
 
-        bool leaseAvailable = true;
-
-        Term[] memory terms = leasesByToken[_tokenId];
-
-        if (terms.length != 0) {
-            leaseAvailable = _isLeaseAvailable(_tokenId, _start, _end);
-            require(leaseAvailable);
+        if (_isLeaseAvailable(_tokenId, _start, _end)) {
+            _makeLease(_addressTo, _tokenId, _start, _end);
+        } else {
+            _unlease(_tokenId, _start, _end);
+            _makeLease(_addressTo, _tokenId, _start, _end);
         }
-        _makeLease(_addressTo, _tokenId, _start, _end);
     }
 
     function _makeLease(
@@ -265,7 +275,6 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 startDate = _start.mul(1 days).add(TIME_START);
         uint256 endDate = _end.mul(1 days).add(TIME_START);
 
-        // if (leaseAvailable) {
         for (uint256 i = _start; i <= _end; i++) {
             daysTaken[_tokenId][i] = true;
         }
@@ -277,83 +286,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         if (lastEndTimeByToken[_tokenId] < _end) {
             lastEndTimeByToken[_tokenId] = _end;
         }
-        // }
         emit Leased(_tokenId, _addressTo, _start, _end);
-    }
-
-    // function leaseOnTransfer(
-    //     uint256 _tokenId,
-    //     uint256 _start,
-    //     uint256 _end,
-    //     address _addressTo,
-    //     uint256 _oldStart,
-    //     uint256 _oldEnd
-    // ) internal {
-    //     require(_end > _start);
-    //     require(_end.sub(_start).mul(86400) <= MAX_DURATION);
-    //     require(_end.sub(_start).mul(86400) >= MIN_DURATION);
-    //     require(_tokenId != 0);
-    //     require(_start != 0);
-    //     require(_end != 0);
-
-    //     bool leaseGood = true;
-
-    //     Term[] memory terms = leasesByToken[_tokenId];
-
-    //     if (terms.length != 0) {
-    //         leaseGood = _isLeaseAvailable(_tokenId, _start, _end);
-    //     }
-
-    //     uint256 oldStart = _oldStart.sub(TIME_START).div(86400);
-    //     uint256 oldEnd = _oldEnd.sub(TIME_START).div(86400);
-
-    //     if (leaseGood) {
-    //         _lease(_addressTo, _tokenId, _start, _end);
-
-    //         uint256 newStart = _start.sub(1);
-    //         uint256 newEnd = _end.add(1);
-
-    //         if (oldEnd - newEnd > 0 && newStart - oldStart == 0) {
-    //             _lease(msg.sender, _tokenId, newEnd, oldEnd);
-    //         }
-
-    //         if (oldEnd - newEnd == 0 && newStart - oldStart > 0) {
-    //             _lease(msg.sender, _tokenId, oldStart, newStart);
-    //         }
-    //         if (oldEnd - newEnd > 0 && newStart - oldStart > 0) {
-    //             _lease(msg.sender, _tokenId, oldStart, newStart);
-    //             _lease(msg.sender, _tokenId, newEnd, oldEnd);
-    //         }
-    //     }
-    // }
-
-    function transferLease(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        address _addressTo
-    ) external payable {
-        require(_tokenId != 0);
-        require(_end != 0);
-        require(_start < _end);
-
-        Term memory term = _getLease(
-            _tokenId,
-            _start.mul(86400).add(TIME_START)
-        );
-
-        require(term.lessee == msg.sender);
-        require(term.endTime >= _end);
-
-        // uint256 oldStart = term.startTime;
-        // uint256 oldEnd = term.endTime;
-
-        // uint256 oldStartDays = term.startTime.sub(TIME_START).div(86400);
-        // uint256 oldEndDays = term.endTime.sub(TIME_START).div(86400);
-
-        _unlease(_tokenId, _start, _end);
-        // leaseOnTransfer(_tokenId, _start, _end, _addressTo, oldStart, oldEnd);
-        _makeLease(_addressTo, _tokenId, _start, _end);
     }
 
     function unlease(
@@ -380,15 +313,23 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     ) internal {
         require(leasesByToken[_tokenId].length > 0);
 
-        address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
-        require(lessee == msg.sender);
+        // address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        // require(lessee == msg.sender);
+        Term memory currentLease = _getLease(_tokenId, _start);
+        // uint256 tempStart = getLeaseStart(_tokenId, _start); //old lease start
+        // uint256 tempEnd = _getLeaseEnd(_tokenId, _start); //old lease end
+        uint256 tempStart = currentLease.startTime; //old lease start days
+        uint256 tempEnd = currentLease.endTime; //old lease end days
 
-        uint256 tempStart = getLeaseStart(_tokenId, _start); //old lease start
-        uint256 tempEnd = _getLeaseEnd(_tokenId, _start); //old lease end
         uint256 dayStart = tempStart.sub(TIME_START).div(86400);
         uint256 dayEnd = tempEnd.sub(TIME_START).div(86400);
-        require(_end < tempEnd + 1);
-        require(_start > tempStart - 1);
+
+        console.log("tempstart is :", tempStart);
+        console.log("tempend is :", tempEnd);
+        console.log("_start is :", _start);
+
+        require(_end < dayEnd + 1);
+        require(_start > dayStart - 1);
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {
@@ -397,23 +338,23 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
                     daysTaken[_tokenId][j] = false;
                 }
 
-                if (tempStart == _start && tempEnd == _end) {
+                if (dayStart == _start && dayEnd == _end) {
                     // situation where we are completely unleasing the lease
                     // NO-OP
-                } else if (tempStart == _start) {
+                } else if (dayStart == _start) {
                     //issue a new lease from _end+1 to
                     _makeLease(
                         leasesByToken[_tokenId][i].lessee,
                         _tokenId,
                         _end + 1,
-                        tempEnd
+                        dayEnd
                     );
-                } else if (tempEnd == _end) {
+                } else if (dayEnd == _end) {
                     // case when lease to unlease its end date is the same
                     _makeLease(
                         leasesByToken[_tokenId][i].lessee,
                         _tokenId,
-                        tempStart,
+                        dayStart,
                         _start - 1
                     );
                 } else {
@@ -422,7 +363,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
                     _makeLease(
                         leasesByToken[_tokenId][i].lessee,
                         _tokenId,
-                        tempStart,
+                        dayStart,
                         _start - 1
                     );
 
@@ -430,7 +371,80 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
                         leasesByToken[_tokenId][i].lessee,
                         _tokenId,
                         _end + 1,
-                        tempEnd
+                        dayEnd
+                    );
+                }
+                break;
+            }
+        }
+
+        emit Unleased(_tokenId, msg.sender, _start, _end);
+    }
+
+    function testUnlease(
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) public {
+        console.log("HEYYY i m here!");
+        require(leasesByToken[_tokenId].length > 0);
+
+        // address lessee = _lesseeOf(_tokenId, _start.mul(86400).add(TIME_START));
+        // require(lessee == msg.sender);
+        Term memory currentLease = _getLease(_tokenId, _start);
+        // uint256 tempStart = getLeaseStart(_tokenId, _start); //old lease start
+        // uint256 tempEnd = _getLeaseEnd(_tokenId, _start); //old lease end
+        uint256 tempStart = currentLease.startTime; //old lease start days
+        uint256 tempEnd = currentLease.endTime; //old lease end days
+
+        uint256 dayStart = tempStart.sub(TIME_START).div(86400);
+        uint256 dayEnd = tempEnd.sub(TIME_START).div(86400);
+
+        require(_end < tempEnd + 1);
+        require(_start > tempStart - 1);
+
+        for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
+            if (leasesByToken[_tokenId][i].startTime == tempStart) {
+                delete leasesByToken[_tokenId][i];
+
+                for (uint256 j = dayStart; j <= dayEnd; j++) {
+                    daysTaken[_tokenId][j] = false;
+                }
+
+                if (dayStart == _start && dayEnd == _end) {
+                    // situation where we are completely unleasing the lease
+                    // NO-OP
+                } else if (dayStart == _start) {
+                    //issue a new lease from _end+1 to
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        _end + 1,
+                        dayEnd
+                    );
+                } else if (dayEnd == _end) {
+                    // case when lease to unlease its end date is the same
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        dayStart,
+                        _start - 1
+                    );
+                } else {
+                    // case when unleased part is in the middle of current lease
+
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        dayStart,
+                        _start - 1
+                    );
+
+                    _makeLease(
+                        leasesByToken[_tokenId][i].lessee,
+                        _tokenId,
+                        _end + 1,
+                        dayEnd
                     );
                 }
                 break;
