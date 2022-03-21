@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Monorepo for Temporary NFT Library",
   "scripts": {
-    "pre-commit": "(git-branch-is --not main || (set -u && echo $ALLOWMAIN)) && yarn test"
+    "pre-commit": "(git-branch-is --not main || (set -u && echo $ALLOWMAIN)) && yarn test",
+    "test": "hardhat run scripts/run2.js"
   },
   "repository": {
     "type": "git",
