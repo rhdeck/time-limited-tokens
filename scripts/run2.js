@@ -19,12 +19,13 @@ const main = async () => {
     //     console.log(x.args.tokenURI);
     // })
 
-  const [myAddress, randomAddress] = await hre.ethers.getSigners();
+  const [myAddress, randomAddress, random2Address] = await hre.ethers.getSigners();
   //leasing the asset
   // console.log(leaseContract)
   console.log("Leasing here");  
   console.log("myaddress is :", myAddress.address);
   console.log("random address is :", randomAddress.address);
+  console.log({random2address:random2Address.address});
   const txn2 = await leaseContract['lease(address,uint256,uint256,uint256)'](myAddress.address, 1, 150, 200);
   console.log("Finished leasing")
   await txn2.wait()
@@ -51,8 +52,8 @@ const main = async () => {
   // console.log("lease available: ",isLease_2)
   
   // not useful so far
-  const isLease_1 = await leaseContract.isLeaseAvailable(1, 78, 79);
-  console.log("lease available: ",isLease_1)
+  // const isLease_1 = await leaseContract.isLeaseAvailable(1, 78, 79);
+  // console.log("lease available: ",isLease_1)
 
   
 
@@ -64,21 +65,32 @@ const main = async () => {
   
   const lessee_3 = await leaseContract.lesseeOf(1,1658250000)
   console.log(lessee_3)  
-  return
-
+  
   const lessee2 = await leaseContract.lesseeOf(1,end)
-  const isLease2 = await leaseContract.isLeaseAvailable(1, 74, 79, 0);
+  console.log({lessee2});
+  
+  // NOT USEFUL RN
+  // const isLease2 = await leaseContract.isLeaseAvailable(1, 74, 79);
+  // console.log({isLease2});
+
   const daysTaken2 = await leaseContract.daysTaken(1,74)
-  
-  console.log(daysTaken2)
-  console.log(lessee2)
-  console.log(isLease2)
-  
-  const leases7 = await leaseContract.getLeases(1)
-  console.log(leases7)
-  
+  console.log({daysTaken2});
+
+  const leases7 = await leaseContract['getLeases(uint256)'](1)
+  console.log({leases7});
+
+    const txn4= await leaseContract['lease(address,uint256,uint256,uint256)'](random2Address.address, 1, 186, 190);
+    await txn4.wait();
+
+  const leases8 = await leaseContract['getLeases(uint256)'](1)
+  console.log({leases8});
+
   const assets = await leaseContract.getAssets(1);
-  console.log(assets)
+  console.log({assets});
+  const timestamp = 1640970000 +43200
+  const datestring = new Date(timestamp*1000).toLocaleString();
+  console.log({datestring});
+
   };
   
   const runMain = async () => {
