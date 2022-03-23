@@ -12,10 +12,13 @@ let instance;
   const [loading, setLoading] = useState("");
 
   const {id, account} = props;
-  let access;
+  //let access;
+  const [access, setAccess] = useState();
+  let dateNow = props.date ? Math.floor(new Date(props.date).valueOf()/1000) : Math.round(Date.now() / 1000);
+    
   const getAccess = async () => {
-    let dateNow = Math.round(Date.now() / 1000);
-    console.log("Date now is:", dateNow);
+    // let dateNow = Math.round(Date.now() / 1000);
+    // console.log("Date now is:", dateNow);
     // let dateStart = await instance.TIME_START;
     // dateNow = Number(dateNow);
     // dateStart = Number(dateStart);
@@ -24,17 +27,19 @@ let instance;
     try {
 
       console.log("id is :", id,"check is :",dateNow);
-    lessee = await instance.lesseeOf(id,dateNow);
+    lessee = await instance.possessorOf(id,dateNow);
+    console.log({account});
+    console.log("lessee is ", lessee)
     } catch (err) {
       console.log(err.message);
     }
 
-
-    if (lessee == account) {
-      access = true;
-    } else {
-      access = false;
-    }
+    // if (lessee == account) {
+    //   access = true;
+    // } else {
+    //   access = false;
+    // }
+    setAccess(lessee.toLowerCase() == account.toLowerCase() ? lessee: false);
   };
 
 
@@ -43,8 +48,8 @@ let instance;
     if (ethereum && account) {
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
-    const dappAddress = "0x812F5575dB0FD5a1c915e986B3dda139D4Bbd490";
-    instance = new ethers.Contract(dappAddress, abi, signer);
+    const dappAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    instance = new ethers.Contract(dappAddress, abi.abi, signer);
     getAccess()
   }
   }
@@ -67,7 +72,7 @@ let instance;
       onClick={handleShow}
       className="button"
     >
-      Check Access
+      Check Access {new Date(dateNow * 1000).toLocaleString()}
     </button>
       <Modal show={show} onHide={handleClose} animation={false}>
 
@@ -77,7 +82,7 @@ let instance;
 
           <Modal.Body>
           {access ?
-          <h3 className="text-center">Access Granted!</h3>
+          <h3 className="text-center">Access Granted to {access}!</h3>
           : <h3 className="text-center">Access Denied!</h3>}
           </Modal.Body>
           <Modal.Footer>

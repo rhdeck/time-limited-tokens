@@ -24,8 +24,8 @@ const App = () => {
   console.log("GM");
   const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
   // const provider = new ethers.providers.InfuraProvider();
-  const thisContract = "0x812F5575dB0FD5a1c915e986B3dda139D4Bbd490";
-  const instance = new ethers.Contract(thisContract, thisABI, provider);
+  const thisContract = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
   const [currentAccount, setCurrentAccount] = useState();
   const [loading, setLoading] = useState(false);
   const [instanceOne, setInstanceOne] = useState(instance);
@@ -105,7 +105,7 @@ const App = () => {
         const dappAddress = thisContract;
         const instanceTwo = new ethers.Contract(
           dappAddress,
-          thisABI,
+          thisABI.abi,
           signer
         );
         setInstanceOne(instanceTwo);
@@ -168,14 +168,15 @@ const App = () => {
     console.log("instance one: ", instanceOne);
     let dates1 = convertDate(formData.dateOne);
     let dates2 = convertDate(formData.dateTwo);
+    // console.log()
     console.log("date1 is : ",dates1);
     // let dates1 = Number(convertDate(formData.dateOne));
     // let dates2 = Number(convertDate(formData.dateTwo));
-    let dateStart = await instanceOne.TIME_START();
-    console.log("Time start is: ", dateStart);
+    // let dateStart = await instanceOne.TIME_START();
+    // console.log("Time start is: ", dateStart);
     // dateStart = Number(dateStart);
-    dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
-    dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
+    // dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
+    // dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
     console.log("Works till here");
     try {
       console.log("some details: ", currentAccount,id, dates1, dates2);
@@ -195,11 +196,11 @@ const App = () => {
     let dateStart = await instanceOne.TIME_START();
     console.log("Date Start is : ", dateStart);
     // dateStart = Number(dateStart);
-    dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
-    dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
-
+    // dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
+    // dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
+    console.log("will run lease: ", formData.wallet,id, dates1, dates2);
     try {
-      await instanceOne["transferLease(uint256,uint256,uint256,address)"](id, dates1, dates2, formData.wallet);
+      await instanceOne["lease(address,uint256,uint256,uint256)"](formData.wallet,id, dates1, dates2);
     } catch (err) {
       console.log(err.message);
     }
@@ -215,8 +216,8 @@ const App = () => {
 
     let dateStart = await instanceOne.TIME_START();
     // dateStart = Number(dateStart);
-    dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
-    dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
+    // dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
+    // dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
 
     try {
       await instanceOne["unlease(uint256,uint256,uint256)"](id, dates1, dates2);
@@ -266,7 +267,7 @@ const App = () => {
                 <p className="text-md text-gray-400 mt-4">
                   {token.description}
                 </p>
-                <ModalAccess id={token.id} account={currentAccount} />
+                <ModalAccess id={token.id} account={currentAccount} date = {formData.dateOne} />
                 <div>
                   <label className="mr-2 text-blue-900">Start Date</label>
                   <input

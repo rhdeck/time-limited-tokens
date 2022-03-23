@@ -303,6 +303,11 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
 
         leasesByToken[_tokenId].push(Term(_addressTo, _tokenId, _start, _end));
 
+        // Pushing lease term to leasesbyaddress
+        leasesByAddress[_addressTo].push(
+            Term(_addressTo, _tokenId, _start, _end)
+        );
+
         if (lastEndTimeByToken[_tokenId] < _end) {
             lastEndTimeByToken[_tokenId] = _end;
         }
@@ -326,6 +331,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         _unlease(_tokenId, _start, _end);
     }
 
+    // TODO: Unlease should fail when trying to lease overlapping period
     function _unlease(
         uint256 _tokenId,
         uint256 _start,
@@ -349,11 +355,14 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
 
         require(_end > tempStart + 1);
         require(_start < tempEnd - 1);
+        require(_end + 1 < tempEnd);
+        require(_start - 1 > tempStart);
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {
                 address lessee = leasesByToken[_tokenId][i].lessee;
                 delete leasesByToken[_tokenId][i];
+                // TODO:  delete leasebyaddress
 
                 if (tempStart == _start && tempEnd == _end) {
                     // situation where we are completely unleasing the lease
