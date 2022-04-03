@@ -357,6 +357,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_start < tempEnd - 1);
         require(_end < tempEnd + 1);
         require(_start > tempStart - 1);
+        require(msg.sender == currentLease.lessee); //checking if the msg.sender is the lessee for the lease being unleased
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {

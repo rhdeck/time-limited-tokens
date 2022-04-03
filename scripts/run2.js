@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const toTS = (date) => {
   return Math.floor(new Date(date).valueOf() / 1000);
 };
@@ -34,6 +36,10 @@ const main = async () => {
   console.log("Gas Used: ", check.gasUsed);
   console.log("Total wei for gas", gas.gasPrice);
   console.log("Contract deployed to:", leaseContract.address);
+  let config = `export const contractAddress = "${leaseContract.address}";`;
+  let data = JSON.stringify(config);
+  fs.writeFileSync('./roberts/lease/config.js', JSON.parse(data));
+
   console.log(
     "END Deploy contract------------------------------------------------------"
   );

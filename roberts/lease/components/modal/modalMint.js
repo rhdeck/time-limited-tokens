@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import { useState } from "react";
 import { ethers } from "ethers";
 import abi from "../../abi/TimeLimitedToken.json";
+import { contractAddress } from '../../config';
 
 function ModalMint(props) {
   let loader;
@@ -18,7 +19,7 @@ let instance;
   if (ethereum && currentAccount) {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
-  const dappAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const dappAddress = contractAddress;
   instance = new ethers.Contract(dappAddress, abi.abi, signer);
 }
 }

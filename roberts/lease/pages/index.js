@@ -10,6 +10,7 @@ import Web3Modal from "web3modal";
 import thisABI from "../abi/TimeLimitedToken.json";
 import { useEtherizer } from "./../components/Etherizer";
 import { ethers } from "ethers";
+import { contractAddress } from '../config';
 // import {
 //   ContractsAppContext,
 //   EthersAppContext,
@@ -24,7 +25,7 @@ const App = () => {
   console.log("GM");
   const { isConnected, provider, signer } = useEtherizer(); //@RHD This is where you can find your provider and signer from web3
   // const provider = new ethers.providers.InfuraProvider();
-  const thisContract = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const thisContract = contractAddress;
   const instance = new ethers.Contract(thisContract, thisABI.abi, provider);
   const [currentAccount, setCurrentAccount] = useState();
   const [loading, setLoading] = useState(false);
