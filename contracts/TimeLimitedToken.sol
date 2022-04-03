@@ -355,8 +355,8 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
 
         require(_end > tempStart + 1);
         require(_start < tempEnd - 1);
-        require(_end + 1 < tempEnd);
-        require(_start - 1 > tempStart);
+        require(_end < tempEnd + 1);
+        require(_start > tempStart - 1);
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {

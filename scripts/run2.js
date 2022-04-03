@@ -82,7 +82,7 @@ const main = async () => {
   console.log(
     "Lease the asset to me------------------------------------------------------"
   );
-  const startDate = new Date("2022-04-01T00:00:00.000Z");
+  const startDate = new Date("2022-04-25T00:00:00.000Z");
   const endDate = new Date("2022-05-28T00:00:00.000Z");
   await lease(myAddress.address, 1, startDate, endDate);
   const leases = await getLeases(1);
@@ -91,7 +91,7 @@ const main = async () => {
   //get lease end
 
   // const start = await leaseContract.getLeaseStart(1, )
-  const end = await leaseContract.getLeaseEnd(1, toTS("2022-04-15"));
+  const end = await leaseContract.getLeaseEnd(1, toTS("2022-04-26"));
   console.log("Lease end date is: ", new Date(end * 1000).toLocaleString());
 
   // this will not show an address for a lessee since its not leased during the timestamp passed in

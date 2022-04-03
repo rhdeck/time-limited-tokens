@@ -30,12 +30,19 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [instanceOne, setInstanceOne] = useState(instance);
   const [allAssets, setAllAssets] = useState();
+  const [allLeases, setAllLeases] = useState();
 
   const convertDate = (date) => {
     const myDate = new Date(date);
     const myEpoch = myDate.valueOf() / 1000.0;
     return myEpoch;
   };
+
+  const dateReadable = (time) => {
+    const myDate = new Date(time);
+    return myDate.toLocaleString('en-US', {timeZone: "UTC"});
+  };
+
 
   const initialFormData = Object.freeze({
     dateOne: "",
@@ -149,7 +156,7 @@ const App = () => {
     if (currentAccount) {
       for (let i = 1; i < 100000; i++) {
         try {
-          console.log("Instance is :",instanceOne);
+
           const asset = await instanceOne.getAssets(i);
           const uri = Buffer.from(asset.substring(29), "base64").toString();
           const tokenDetails = JSON.parse(uri);
@@ -163,6 +170,30 @@ const App = () => {
     }
     setAllAssets(assets);
   }, [currentAccount, instanceOne]);
+
+  const getAllLeases = useCallback(async () => {
+    console.log("getallleases is running.");
+    let leases = [];
+    let assets = [];
+    if (currentAccount) {
+      for (let i = 1; i <= allAssets.length; i++) {
+        console.log(allAssets, " Allassets")
+        for (let j = 0; j < 100000; j++) {
+        try {
+              console.log("Instance is :",instanceOne);
+          const lease = await instanceOne.leasesByToken(i, j);
+          leases.push(lease);
+        } catch (err) {
+          assets.push(leases)
+          leases = [];
+          console.log(err.message, " Lease error");
+          break;
+        }
+      }
+      }
+    }
+    setAllLeases(assets);
+  }, [currentAccount, instanceOne, allAssets]);
 
   const lease = async (id) => {
     console.log("instance one: ", instanceOne);
@@ -226,6 +257,26 @@ const App = () => {
     }
   };
 
+  const unleaseTwo = async (id, dates1, dates2) => {
+
+    console.log("entering unlease", id, dates1, dates2);
+    // let dates1 = Number(convertDate(formData.dateOne));
+    // let dates2 = Number(convertDate(formData.dateTwo));
+
+    let dateStart = await instanceOne.TIME_START();
+    // dateStart = Number(dateStart);
+    // dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
+    // dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
+
+    try {
+      await instanceOne["unlease(uint256,uint256,uint256)"](id, dates1, dates2);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+console.log(allLeases, " All leases")
+
   useEffect(() => {
     fetchAccountData();
   }, [fetchAccountData]);
@@ -233,6 +284,10 @@ const App = () => {
   useEffect(() => {
     getAllAssets();
   }, [instanceOne, currentAccount, getAllAssets]);
+
+  useEffect(() => {
+    getAllLeases();
+  }, [instanceOne, currentAccount, getAllLeases]);
 
   return (
     // <ContractsAppContext>
@@ -251,7 +306,7 @@ const App = () => {
       </div>
 
       <div className="flex items-center justify-center mx-24">
-        {allAssets ? (
+        {allAssets && allLeases.length > 0 ? (
           allAssets.map((token, index) => {
             return (
               <div
@@ -315,6 +370,18 @@ const App = () => {
                     className="inline-block w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                   />
                 </div>
+                {allLeases[index].filter(lease => Number(lease.startTime)).map((leases, leaseIndex) => {
+                  return (
+                  <div onClick={async () => {
+                    console.log("UnleaseTwo is about to run ", index, leases.startTime, leases.endTime)
+                    await unleaseTwo(token.id, Number(leases.startTime), Number(leases.endTime))
+                    console.log("UnleaseTwo has run!!!")
+                  }} className="text-black mx-auto border-b-4 border-black p-1" key={leaseIndex}>
+                  <div className="w-64 truncate">Lessee: {leases.lessee}:</div>
+                  Dates: {dateReadable(Number(leases.startTime)*1000)} - {dateReadable(Number(leases.endTime*1000))}
+                  </div>
+                )
+                })}
               </div>
             );
           })

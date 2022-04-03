@@ -15,7 +15,7 @@ let instance;
   //let access;
   const [access, setAccess] = useState();
   let dateNow = props.date ? Math.floor(new Date(props.date).valueOf()/1000) : Math.round(Date.now() / 1000);
-    
+
   const getAccess = async () => {
     // let dateNow = Math.round(Date.now() / 1000);
     // console.log("Date now is:", dateNow);
