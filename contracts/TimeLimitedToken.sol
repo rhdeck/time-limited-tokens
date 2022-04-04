@@ -26,6 +26,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     mapping(address => Term[]) public leasesByAddress;
     mapping(uint256 => uint256) public lastEndTimeByToken;
     mapping(uint256 => string) public assets;
+    mapping(bytes32 => address) public approvalsbyLease;
 
     event AssetCreated(address indexed _from, string _tokenURI);
 
@@ -270,6 +271,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_end > _start);
         require(_end.sub(_start) <= MAX_DURATION);
         require(_end.sub(_start) >= MIN_DURATION);
+        require(_isApproved(_addressTo, _tokenId, _start, _end));
 
         if (_isLeaseAvailable(_tokenId, _start, _end)) {
             console.log("onlymakelease runs");
@@ -357,7 +359,8 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_start < tempEnd - 1);
         require(_end < tempEnd + 1);
         require(_start > tempStart - 1);
-        require(msg.sender == currentLease.lessee); //checking if the msg.sender is the lessee for the lease being unleased
+
+        // require(_isAuthorized(currentLease)); //checking if the msg.sender is the lessee for the lease being unleased
 
         for (uint256 i = 0; i < leasesByToken[_tokenId].length; i++) {
             if (leasesByToken[_tokenId][i].startTime == tempStart) {
@@ -384,6 +387,12 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         }
         emit Unleased(_tokenId, msg.sender, _start, _end);
     }
+
+    //TODO: Look at it again
+    // function _isAuthorized(Term memory lease) internal returns (bool) {
+    //     return (msg.sender == lease.lessee);
+    //     // return _owner == msg.sender || msg.sender == owner;
+    // }
 
     function mintAsset(
         string memory _name,
@@ -426,21 +435,48 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     // Adding functions that have been defined in the interface but not defined in the contract yet
 
     function approveLease(
-        address,
-        uint256,
-        uint256,
-        uint256
-    ) external pure override {
-        require(false);
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) external override {
+        bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
+        approvalsbyLease[hashed_lease] = _addressTo;
+        emit LeaseApproval(_addressTo, _tokenId, _start, _end);
+    }
+
+    function _isApproved(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal view returns (bool) {
+        if (
+            approvalsbyLease[_hashLease(_tokenId, _start, _end)] == _addressTo
+        ) {
+            return true;
+        }
+        if (ownerOf(_tokenId) == msg.sender) {
+            return true;
+        }
+        return false;
+    }
+
+    function _hashLease(
+        // address _addressTo,
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_tokenId, _start, _end));
     }
 
     function getLeaseApproved(
-        uint256,
-        uint256,
-        uint256
-    ) external pure override returns (address) {
-        require(false);
-        return address(0);
+        uint256 _tokenId,
+        uint256 _start,
+        uint256 _end
+    ) external view override returns (address) {
+        return approvalsbyLease[_hashLease(_tokenId, _start, _end)];
     }
 
     function setLeaseApprovalForAll(address, bool) external pure override {
