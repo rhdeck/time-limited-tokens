@@ -17,8 +17,8 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     Counters.Counter private _tokenIds;
 
     uint256 public constant TIME_START = 1640970000; // Jan-1-22
-    uint256 public constant MAX_DURATION = 60 days; // 60 days
-    uint256 public constant MIN_DURATION = 1 days; // 1 day in 30s blocks, or 86400 for days
+    uint256 constant MAX_DURATION = 60 days; // 60 days
+    uint256 constant MIN_DURATION = 1 days; // 1 day in 30s blocks, or 86400 for days
     bool public constant TIMESTAMP = false; // Use timestamp instead of block number
 
     // A mapping by tokenId to a mapping of startTime to term
@@ -27,6 +27,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
     mapping(uint256 => uint256) public lastEndTimeByToken;
     mapping(uint256 => string) public assets;
     mapping(bytes32 => address) public approvalsbyLease;
+    mapping(address => mapping(address => bool)) public approvalbyAddress;
 
     event AssetCreated(address indexed _from, string _tokenURI);
 
@@ -44,11 +45,11 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _end
     );
 
-    function MAX_LEASE_DURATION() external view override returns (uint256) {
+    function MAX_LEASE_DURATION() external pure override returns (uint256) {
         return MAX_DURATION;
     }
 
-    function MIN_LEASE_DURATION() external view override returns (uint256) {
+    function MIN_LEASE_DURATION() external pure override returns (uint256) {
         return MIN_DURATION;
     }
 
@@ -314,6 +315,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             lastEndTimeByToken[_tokenId] = _end;
         }
         emit Leased(_tokenId, _addressTo, _start, _end);
+        console.log("Make lease ends");
     }
 
     function unlease(
@@ -440,6 +442,11 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) external override {
+        // if the lease on both the start and end date is the same lease
+        // or if the token is not leased for that period then find the possessor of the lease for that period
+        // if no lease then check for msg.sender is the owner of the token
+        // also check for the agent of the owner of the token
+        require(msg.sender == ownerOf(_tokenId)); //checking if the msg.sender is the owner/landlord of the token
         bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
         approvalsbyLease[hashed_lease] = _addressTo;
         emit LeaseApproval(_addressTo, _tokenId, _start, _end);
@@ -479,17 +486,20 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         return approvalsbyLease[_hashLease(_tokenId, _start, _end)];
     }
 
-    function setLeaseApprovalForAll(address, bool) external pure override {
-        require(false);
+    function setLeaseApprovalForAll(address _agent, bool _approved)
+        external
+        override
+    {
+        approvalbyAddress[msg.sender][_agent] = _approved;
+        emit LeaseApprovalForAll(msg.sender, _agent, _approved);
     }
 
-    function isLeaseApprovedForall(address, address)
+    function isLeaseApprovedForall(address _owner, address _agent)
         external
-        pure
+        view
         override
         returns (bool)
     {
-        require(false);
-        return false;
+        return approvalbyAddress[_owner][_agent];
     }
 }
