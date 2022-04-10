@@ -70,8 +70,10 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         return _lesseeOf(_tokenId, _date);
     }
 
+    //changed from external to public
+    // maybe need to add agent as a possible possessor?
     function possessorOf(uint256 _tokenId, uint256 _date)
-        external
+        public
         view
         returns (address)
     {
@@ -445,11 +447,38 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         // if the lease on both the start and end date is the same lease
         // or if the token is not leased for that period then find the possessor of the lease for that period
         // if no lease then check for msg.sender is the owner of the token
-        // also check for the agent of the owner of the token
-        require(msg.sender == ownerOf(_tokenId)); //checking if the msg.sender is the owner/landlord of the token
-        bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
-        approvalsbyLease[hashed_lease] = _addressTo;
-        emit LeaseApproval(_addressTo, _tokenId, _start, _end);
+        // also check for the agent of the owner of the token --- stll need to do this---
+
+        // If the lease is not found between for the period check if msg.sender is the owner
+        if (_isLeaseAvailable(_tokenId, _start, _end)) {
+            require(msg.sender == possessorOf(_tokenId, _start));
+            // Now that msg.sender is the owner of the token we can approve the lease
+            bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
+            approvalsbyLease[hashed_lease] = _addressTo;
+            emit LeaseApproval(_addressTo, _tokenId, _start, _end);
+        } else {
+            // it is leased during the period, so compare the hashed lease using start date with the hashed lease of the end date
+            Term memory start_lease = _getLease(_tokenId, _start);
+            Term memory end_lease = _getLease(_tokenId, _end);
+            require(start_lease.lessee == end_lease.lessee);
+
+            bytes32 start_lease_hash = _hashLease(
+                start_lease.tokenId,
+                start_lease.startTime,
+                start_lease.endTime
+            );
+            bytes32 end_lease_hash = _hashLease(
+                end_lease.tokenId,
+                end_lease.startTime,
+                end_lease.endTime
+            );
+            require(start_lease_hash == end_lease_hash); // if the hashed leases are the same then the lease is the same
+            require(msg.sender == possessorOf(_tokenId, _start)); // if the possessor is the msg.sender then the msg.sender is the owner or lessee of the token
+            // Now that the hashes are the same we can approve the lease
+            bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
+            approvalsbyLease[hashed_lease] = _addressTo;
+            emit LeaseApproval(_addressTo, _tokenId, _start, _end);
+        }
     }
 
     function _isApproved(
