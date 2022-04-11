@@ -94,19 +94,21 @@ const main = async () => {
 
     //should explode since random2address is not an agent of the owner
     try{
-        console.log("Trying to approve by random2address");
-        const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));  
+        console.log("Trying to lease as random2address for myaddress");
+        const lease2 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", random2Address);
+        // const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));  
     }
     catch(e){
-        console.log("approval by random2address did fail");
+        console.log("lease by myaddress did fail");
     }
+
     
 
     const approveall_tx = await leaseContract.connect(randomAddress).setLeaseApprovalForAll(random2Address.address, true);
     const approveall_receipt = await approveall_tx.wait();
     showEvents(approveall_receipt);
 
-    //removing approval from random2address
+    // //removing approval from random2address
     const disapproveall_tx = await leaseContract.connect(randomAddress).setLeaseApprovalForAll(random2Address.address, false);
     const disapproveall_receipt = await disapproveall_tx.wait();
     showEvents(disapproveall_receipt);
@@ -115,10 +117,11 @@ const main = async () => {
     const approveall_receipt_2 = await approveall_tx_2.wait();
     showEvents(approveall_receipt_2);
 
-
-    const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));
-    const receipt5 = await approved_tx.wait();
-    showEvents(receipt5);
+    const lease2 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", random2Address);
+        
+    // const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));
+    // const receipt5 = await approved_tx.wait();
+    // showEvents(receipt5);
 
     try{
       const lease1 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", myAddress);
@@ -126,6 +129,7 @@ const main = async () => {
     catch(e){
         console.log(e);
     }
+
 //   const startTS = toTS("2022-05-01");
 //   const endTS = toTS("2022-06-01");
 //   const receipt3 = await leaseContract.connect(myAddress)[ "lease(address,uint256,uint256,uint256)"

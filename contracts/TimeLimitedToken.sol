@@ -121,18 +121,18 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_date != 0);
 
         Term[] memory terms = leasesByToken[_tokenId];
-        console.log("Terms length", _tokenId, terms.length);
+        // console.log("Terms length", _tokenId, terms.length);
         if (terms.length == 0) {
             return Term(address(0), 0, 0, 0);
         }
-        console.log("_date is :", _date);
+        // console.log("_date is :", _date);
 
         for (uint256 i = 0; i < terms.length; i++) {
             if ((terms[i].startTime <= _date) && (_date <= terms[i].endTime)) {
                 return terms[i];
             }
         }
-        console.log("getlease could not find a lease!!!");
+        // console.log("getlease could not find a lease!!!");
         return Term(address(0), 0, 0, 0);
     }
 
@@ -274,13 +274,45 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         require(_end > _start);
         require(_end.sub(_start) <= MAX_DURATION);
         require(_end.sub(_start) >= MIN_DURATION);
-        require(_isApproved(_addressTo, _tokenId, _start, _end));
+        // require(_isApproved(_addressTo, _tokenId, _start, _end));
 
         if (_isLeaseAvailable(_tokenId, _start, _end)) {
-            console.log("onlymakelease runs");
+            bool found = false;
+            address _owner = ownerOf(_tokenId);
+            if (msg.sender == _owner) {
+                found = true;
+            } else {
+                if (approvalbyAddress[_owner][msg.sender] == true) {
+                    found = true;
+                }
+            }
+            require(
+                found ||
+                    approvalsbyLease[_hashLease(_tokenId, _start, _end)] ==
+                    _addressTo
+            );
+            // console.log("onlymakelease runs");
             _makeLease(_addressTo, _tokenId, _start, _end);
         } else {
-            console.log("both makelease and unlease run");
+            Term memory start_lease = _getLease(_tokenId, _start);
+            Term memory end_lease = _getLease(_tokenId, _end);
+            require(start_lease.startTime == end_lease.startTime);
+
+            address possessor = start_lease.lessee;
+            bool found = false;
+            if (msg.sender == possessor) {
+                found = true;
+            } else {
+                if (approvalbyAddress[possessor][msg.sender] == true) {
+                    found = true;
+                }
+            }
+            require(
+                found ||
+                    approvalsbyLease[_hashLease(_tokenId, _start, _end)] ==
+                    _addressTo
+            );
+            // console.log("both makelease and unlease run");
             _unlease(_tokenId, _start, _end);
             _makeLease(_addressTo, _tokenId, _start, _end);
         }
@@ -292,12 +324,12 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) internal {
-        console.log("Make lease starting");
-        console.log(" Address to is :", _addressTo);
-        console.log(" token id  is :", _tokenId);
-        console.log(" start is :", _start);
-        console.log(" end is :", _end);
-        console.log("/Make lease starting");
+        // console.log("Make lease starting");
+        // console.log(" Address to is :", _addressTo);
+        // console.log(" token id  is :", _tokenId);
+        // console.log(" start is :", _start);
+        // console.log(" end is :", _end);
+        // console.log("/Make lease starting");
 
         require(_end > _start);
         require(_end.sub(_start) <= MAX_DURATION);
@@ -325,6 +357,23 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) external override {
+        Term memory start_lease = _getLease(_tokenId, _start);
+        Term memory end_lease = _getLease(_tokenId, _end);
+        require(start_lease.startTime > 0);
+        require(start_lease.startTime == end_lease.startTime);
+
+        address possessor = start_lease.lessee;
+        bool found = false;
+        if (msg.sender == possessor) {
+            found = true;
+        } else {
+            if (approvalbyAddress[possessor][msg.sender] == true) {
+                found = true;
+            }
+        }
+
+        require(found);
+
         _unlease(_tokenId, _start, _end);
     }
 
@@ -343,21 +392,21 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         uint256 _start,
         uint256 _end
     ) internal {
-        console.log("Starting Unlease");
-        console.log(" _tokenId is :", _tokenId);
-        console.log(" _start is: ", _start);
-        console.log(" _end is : ", _end);
-        console.log("/Starting Unlease");
+        // console.log("Starting Unlease");
+        // console.log(" _tokenId is :", _tokenId);
+        // console.log(" _start is: ", _start);
+        // console.log(" _end is : ", _end);
+        // console.log("/Starting Unlease");
         require(leasesByToken[_tokenId].length > 0);
 
         Term memory currentLease = _getLease(_tokenId, _start);
-        console.log("current lease tokenId is : ", currentLease.tokenId);
+        // console.log("current lease tokenId is : ", currentLease.tokenId);
         uint256 tempStart = currentLease.startTime; //old lease start
         uint256 tempEnd = currentLease.endTime; //old lease end
 
-        console.log("tempstart is :", tempStart);
-        console.log("tempend is :", tempEnd);
-        console.log("_start is :", _start);
+        // console.log("tempstart is :", tempStart);
+        // console.log("tempend is :", tempEnd);
+        // console.log("_start is :", _start);
 
         require(_end > tempStart + 1);
         require(_start < tempEnd - 1);
@@ -451,7 +500,16 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
 
         // If the lease is not found between for the period check if msg.sender is the owner
         if (_isLeaseAvailable(_tokenId, _start, _end)) {
-            require(msg.sender == possessorOf(_tokenId, _start));
+            bool found = false;
+            address _owner = ownerOf(_tokenId);
+            if (msg.sender == _owner) {
+                found = true;
+            } else {
+                if (approvalbyAddress[_owner][msg.sender] == true) {
+                    found = true;
+                }
+            }
+            require(found);
             // Now that msg.sender is the owner of the token we can approve the lease
             bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
             approvalsbyLease[hashed_lease] = _addressTo;
@@ -460,20 +518,18 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             // it is leased during the period, so compare the hashed lease using start date with the hashed lease of the end date
             Term memory start_lease = _getLease(_tokenId, _start);
             Term memory end_lease = _getLease(_tokenId, _end);
-            require(start_lease.lessee == end_lease.lessee);
+            require(start_lease.startTime == end_lease.startTime);
 
-            bytes32 start_lease_hash = _hashLease(
-                start_lease.tokenId,
-                start_lease.startTime,
-                start_lease.endTime
-            );
-            bytes32 end_lease_hash = _hashLease(
-                end_lease.tokenId,
-                end_lease.startTime,
-                end_lease.endTime
-            );
-            require(start_lease_hash == end_lease_hash); // if the hashed leases are the same then the lease is the same
-            require(msg.sender == possessorOf(_tokenId, _start)); // if the possessor is the msg.sender then the msg.sender is the owner or lessee of the token
+            address possessor = start_lease.lessee;
+            bool found = false;
+            if (msg.sender == possessor) {
+                found = true;
+            } else {
+                if (approvalbyAddress[possessor][msg.sender] == true) {
+                    found = true;
+                }
+            }
+            require(found);
             // Now that the hashes are the same we can approve the lease
             bytes32 hashed_lease = _hashLease(_tokenId, _start, _end);
             approvalsbyLease[hashed_lease] = _addressTo;
@@ -492,9 +548,21 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         ) {
             return true;
         }
-        if (ownerOf(_tokenId) == msg.sender) {
-            return true;
+        // if (ownerOf(_tokenId) == msg.sender) {
+        //     return true;
+        // }
+        bool found = false;
+        address _owner = ownerOf(_tokenId);
+        if (msg.sender == _owner) {
+            found = true;
+        } else {
+            if (approvalbyAddress[_owner][msg.sender] == true) {
+                found = true;
+            }
         }
+        if (found) {
+            return true;
+        } else {}
         return false;
     }
 
