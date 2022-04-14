@@ -19,11 +19,16 @@ const showEvents = (receipt) => {
 };
 const main = async () => {
   //#region get signers
-  const [myAddress, randomAddress, random2Address] =
+  const [landlord, lessee_1, owner_agent, lessee_agent, lessee_2] =
     await hre.ethers.getSigners();
-  console.log("myaddress is :", myAddress.address);
-  console.log("random address is :", randomAddress.address);
-  console.log({ random2address: random2Address.address });
+//   console.log("myaddress is :", landlord.address);
+//   console.log("Lessee is :", lessee_1.address);
+  console.log("Owner is :", landlord.address);
+  console.log("Lesseeis :", lessee_1.address);
+  console.log("Owner agent is :", owner_agent.address);
+  console.log("Lessee agent is :", lessee_agent.address);
+  console.log("Lessee 2 is :", lessee_2.address);
+//   console.log({ owner_agent: owner_agent.address });
   //#endregion
   //#region Deploy the contract
   console.log(
@@ -73,62 +78,70 @@ const main = async () => {
   console.log(
     "Mint the Asset------------------------------------------------------"
   );
-  const txn = await leaseContract.connect(randomAddress).mintAsset("Home", "AirBNB ", "NO IMAGE");
+  const txn = await leaseContract.connect(landlord).mintAsset("Home", "AirBNB ", "NO IMAGE");
 //   console.log("we here",txn);
   const receipt = await txn.wait();
-  const mint2 = await leaseContract.mintAsset("TEST", "AirBNB ", "NO IMAGE");
-  const receipt2 = await mint2.wait();
+//   const mint2 = await leaseContract.mintAsset("TEST", "AirBNB ", "NO IMAGE");
+//   const receipt2 = await mint2.wait();
 
   showEvents(receipt);
-  showEvents(receipt2);
+//   showEvents(receipt2);
 
-  
-    //should explode
+    console.log("Trying to lease to lessee_1 -> should fail");
+    //leasing as lesse_1 without any approval -> should explode
     try{
-        console.log("Trying to lease with myaddress");
-      const lease1 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", myAddress);
+        console.log("Trying to lease with lessee_1");
+      const lease1 = await lease(lessee_1.address, 1, "2022-05-01", "2022-06-01", lessee_1);
     }
     catch(e){
         console.log("Lease by myaddress failed as expected");
     }
 
-    //should explode since random2address is not an agent of the owner
+    console.log("Trying to lease to lessee_1 as owner's agent before being approved-> should fail");
+    //should explode since OWNER's agent has not been set
     try{
-        console.log("Trying to lease as random2address for myaddress");
-        const lease2 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", random2Address);
-        // const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));  
+        console.log("Trying to lease owner agent to lessee_1");
+        const lease2 = await lease(lessee_1.address, 1, "2022-05-01", "2022-06-01", owner_agent);
     }
     catch(e){
         console.log("lease by myaddress did fail");
     }
 
-    
-
-    const approveall_tx = await leaseContract.connect(randomAddress).setLeaseApprovalForAll(random2Address.address, true);
+    console.log("Trying to approve owner's agent -> should pass");
+    const approveall_tx = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, true);
     const approveall_receipt = await approveall_tx.wait();
     showEvents(approveall_receipt);
 
     // //removing approval from random2address
-    const disapproveall_tx = await leaseContract.connect(randomAddress).setLeaseApprovalForAll(random2Address.address, false);
+    console.log("Trying to disapprove owners agent");
+    const disapproveall_tx = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, false);
     const disapproveall_receipt = await disapproveall_tx.wait();
     showEvents(disapproveall_receipt);
 
-    const approveall_tx_2 = await leaseContract.connect(randomAddress).setLeaseApprovalForAll(random2Address.address, true);
+    console.log("Trying to approve owner's agent for the last time -> should pass");
+    const approveall_tx_2 = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, true);
     const approveall_receipt_2 = await approveall_tx_2.wait();
     showEvents(approveall_receipt_2);
 
-    const lease2 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", random2Address);
+    console.log("Trying to lease to lessee_1 as owner's agent after being approved-> should pass");
+    const lease2 = await lease(lessee_1.address, 1, "2022-05-01", "2022-06-01", owner_agent);
         
-    // const approved_tx = await leaseContract.connect(random2Address).approveLease(myAddress.address, 1, toTS("2022-05-01"), toTS("2022-06-01"));
-    // const receipt5 = await approved_tx.wait();
-    // showEvents(receipt5);
-
+    console.log("Trying to lease to lessee_2 as owner's agent.-> should fail as its leased to lesse_1");
     try{
-      const lease1 = await lease(myAddress.address, 1, "2022-05-01", "2022-06-01", myAddress);
+      const lease1 = await lease(lessee_2.address, 1, "2022-05-01", "2022-06-01", owner_agent);
     }
     catch(e){
         console.log(e);
     }
+
+    // owner approves lease and then lessee tries to lease (OWNER+LESSEE)
+    // OWNERS's agent approves lease and then lessee leases (OWNER' agent + LESSEE)
+    // OWNER issues lease to lessee (OWNER + LESSEE)
+    // Owner's agent issues lease to lessee (OWNER' agent + LESSEE)
+    // Lessee approves sublet to lessee_2 and leseee_2 leases (LESSEE_2 + LESSEE_1)
+    // Lessee's agent approves sublet to lessee_2 and leseee_2 leases (LESSEE_2 + LESSEE_agent)
+    // Lessee_1 issues sublet to lessee_2 (LESSEE_2 + LESSEE_1) 
+    // Lessee_1's agent issues sublet to lessee_2 (LESSEE_2 + LESSEE_agent)
 
 //   const startTS = toTS("2022-05-01");
 //   const endTS = toTS("2022-06-01");
