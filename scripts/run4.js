@@ -107,26 +107,34 @@ const main = async () => {
         console.log("lease by myaddress did fail");
     }
 
+
+    // Landloard approves an agent
     console.log("Trying to approve owner's agent -> should pass");
     const approveall_tx = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, true);
     const approveall_receipt = await approveall_tx.wait();
     showEvents(approveall_receipt);
 
-    // //removing approval from random2address
+    // removing approval from agent
     console.log("Trying to disapprove owners agent");
     const disapproveall_tx = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, false);
     const disapproveall_receipt = await disapproveall_tx.wait();
     showEvents(disapproveall_receipt);
 
+    // Landloard approves an agent again
     console.log("Trying to approve owner's agent for the last time -> should pass");
     const approveall_tx_2 = await leaseContract.connect(landlord).setLeaseApprovalForAll(owner_agent.address, true);
     const approveall_receipt_2 = await approveall_tx_2.wait();
     showEvents(approveall_receipt_2);
 
-    console.log("Trying to lease to lessee_1 as owner's agent after being approved-> should pass");
+    // Owner's agent issues lease to lessee (OWNER' agent + LESSEE)
+    console.log("------Trying to lease to lessee_1 as owner's agent after being approved-> should pass");
+    try{
     const lease2 = await lease(lessee_1.address, 1, "2022-05-01", "2022-06-01", owner_agent);
-        
-    console.log("Trying to lease to lessee_2 as owner's agent.-> should fail as its leased to lesse_1");
+    }
+    catch(e){
+        console.log(e);
+    }
+    console.log("------Trying to lease to lessee_2 as owner's agent.-> should fail as its leased to lesse_1");
     try{
       const lease1 = await lease(lessee_2.address, 1, "2022-05-01", "2022-06-01", owner_agent);
     }
@@ -134,14 +142,81 @@ const main = async () => {
         console.log(e);
     }
 
-    // owner approves lease and then lessee tries to lease (OWNER+LESSEE)
-    // OWNERS's agent approves lease and then lessee leases (OWNER' agent + LESSEE)
+    // owner approves lease and then lessee_1 tries to lease (OWNER+LESSEE)
+
+    try{
+        console.log("------Trying to lease to lessee_1 as lessee_1 after owner approval-> should pass");
+        const approve_lesse_1 = await leaseContract.connect(landlord).approveLease(lessee_1.address, 1, toTS("2022-07-01"), toTS("2022-08-01"));
+        const approve_lesse_1_receipt = await approve_lesse_1.wait();
+        showEvents(approve_lesse_1_receipt);
+        const lease3 = await lease(lessee_1.address, 1, "2022-07-01", "2022-08-01", lessee_1);
+        console.log("------Trying to lease to lessee_2 as lessee_2-> should fail as its leased to lesse_1");
+        const lease4 = await lease(lessee_2.address, 1, "2022-07-01", "2022-08-01", lessee_2);
+    }
+    catch(e){
+        console.log(e);
+    }
+
     // OWNER issues lease to lessee (OWNER + LESSEE)
-    // Owner's agent issues lease to lessee (OWNER' agent + LESSEE)
-    // Lessee approves sublet to lessee_2 and leseee_2 leases (LESSEE_2 + LESSEE_1)
+    try{
+        console.log("------Trying to lease to lessee_1 as owner-> should pass");
+        const lease5 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", landlord);
+        console.log("------Trying to lease to lessee_2 as owner-> should fail as its leased to lesse_1");
+        const lease6 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", landlord);
+    }
+    catch(e){
+        console.log(e);
+    }
+    // Lessee approves sublet to lessee_2 and lessee_2 leases (LESSEE_2 + LESSEE_1)
+    try{
+        console.log("------Trying to lease to lessee_2 as lessee_2 after lessee_1 approval-> should pass");
+        const approval_lease_2 = await leaseContract.connect(lessee_1).approveLease(lessee_2.address, 1, toTS("2022-08-02"), toTS("2022-09-01"));
+        const approval_lease_2_receipt = await approval_lease_2.wait();
+        showEvents(approval_lease_2_receipt);
+        const lease7 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_2);
+        console.log("------Trying to lease to lessee_1 as lessee_1-> should fail as its sublet to lessee_2");
+        const lease8 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_1);
+    }
+    catch(e){
+        console.log(e);
+    }
     // Lessee's agent approves sublet to lessee_2 and leseee_2 leases (LESSEE_2 + LESSEE_agent)
+    try{
+        console.log("------Trying to lease to lessee_2 as lessee_2 after lessee_1 approval agent-> should pass");
+        const approval_lease_2_agent = await leaseContract.connect(lessee_1).setLeaseApprovalForAll(lessee_agent.address, true);
+        const approval_lease_2_agent_receipt = await approval_lease_2_agent.wait();
+        showEvents(approval_lease_2_agent_receipt);
+        const approval_agent_1 =  await leaseContract.connect(lessee_agent).approveLease(lessee_2.address, 1, toTS("2022-08-02"), toTS("2022-09-01")); //fails maybe because its already approved approved?
+        const approval_agent_1_receipt = await approval_agent_1.wait();
+        showEvents(approval_agent_1_receipt);
+        const lease9 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_2);
+        console.log("------Trying to lease to lessee_1 as lessee_1 agent-> should fail as its sublet to lessee_2");
+        const lease10 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+    }
+    catch(e){
+        console.log(e);
+    }
     // Lessee_1 issues sublet to lessee_2 (LESSEE_2 + LESSEE_1) 
+    try{
+        console.log("------Trying to sublet to lessee_2 as lessee_1-> should pass"); // --- maybe this should fail since lessee_2 was the lessee for the period?
+        const lease11 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_1);
+        console.log("------Trying to sublet to lessee_1 as lessee_1-> should fail as its sublet to lessee_2");
+        const sublet3 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_1);
+    }
+    catch(e){
+        console.log(e);
+    }
+
     // Lessee_1's agent issues sublet to lessee_2 (LESSEE_2 + LESSEE_agent)
+    try{
+        console.log("------Trying to sublet to lessee_2 as lessee_1 agent-> should pass"); // --- maybe this should fail since lessee_2 was the lessee for the period?
+        const lease9 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+        console.log("------Trying to lease to lessee_1 as lessee_1 agent-> should fail as its sublet to lessee_2");
+        const lease10 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+    }
+    catch(e){
+        console.log(e);
+    }
 
 //   const startTS = toTS("2022-05-01");
 //   const endTS = toTS("2022-06-01");
