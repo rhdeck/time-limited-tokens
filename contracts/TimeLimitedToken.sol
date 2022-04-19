@@ -333,6 +333,10 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
 
         require(_end > _start);
         require(_end.sub(_start) <= MAX_DURATION);
+        // console.log("_end is :", _end);
+        // console.log("_start is :", _start);
+        // console.log("end.sub(start) is :", _end.sub(_start));
+        // console.log("MIN_DURATION is :", MIN_DURATION);
         require(_end.sub(_start) >= MIN_DURATION);
         require(_tokenId != 0);
         require(_start != 0);
@@ -349,7 +353,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
             lastEndTimeByToken[_tokenId] = _end;
         }
         emit Leased(_tokenId, _addressTo, _start, _end);
-        console.log("Make lease ends");
+        // console.log("Make lease ends");
     }
 
     function unlease(

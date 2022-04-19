@@ -51,6 +51,9 @@ const main = async () => {
   );
   //#endregion
   //#region define functions based on the contract
+
+  // 1660608000
+  // 1661990400
   const lease = async (address, token, start, end, runAs) => {
     const startTS = toTS(start);
     const endTS = toTS(end);
@@ -170,10 +173,10 @@ const main = async () => {
     // Lessee approves sublet to lessee_2 and lessee_2 leases (LESSEE_2 + LESSEE_1)
     try{
         console.log("------Trying to lease to lessee_2 as lessee_2 after lessee_1 approval-> should pass");
-        const approval_lease_2 = await leaseContract.connect(lessee_1).approveLease(lessee_2.address, 1, toTS("2022-08-02"), toTS("2022-09-01"));
+        const approval_lease_2 = await leaseContract.connect(lessee_1).approveLease(lessee_2.address, 1, toTS("2022-08-02"), toTS("2022-08-15"));
         const approval_lease_2_receipt = await approval_lease_2.wait();
         showEvents(approval_lease_2_receipt);
-        const lease7 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_2);
+        const lease7 = await lease(lessee_2.address, 1, "2022-08-02", "2022-08-15", lessee_2);
         console.log("------Trying to lease to lessee_1 as lessee_1-> should fail as its sublet to lessee_2");
         const lease8 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_1);
     }
@@ -186,22 +189,22 @@ const main = async () => {
         const approval_lease_2_agent = await leaseContract.connect(lessee_1).setLeaseApprovalForAll(lessee_agent.address, true);
         const approval_lease_2_agent_receipt = await approval_lease_2_agent.wait();
         showEvents(approval_lease_2_agent_receipt);
-        const approval_agent_1 =  await leaseContract.connect(lessee_agent).approveLease(lessee_2.address, 1, toTS("2022-08-02"), toTS("2022-09-01")); //fails maybe because its already approved approved?
+        const approval_agent_1 =  await leaseContract.connect(lessee_agent).approveLease(lessee_2.address, 1, toTS("2022-08-17"), toTS("2022-09-01")); //fails maybe because its already approved approved?
         const approval_agent_1_receipt = await approval_agent_1.wait();
         showEvents(approval_agent_1_receipt);
-        const lease9 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_2);
+        const lease9 = await lease(lessee_2.address, 1, "2022-08-17", "2022-09-01", lessee_2);
         console.log("------Trying to lease to lessee_1 as lessee_1 agent-> should fail as its sublet to lessee_2");
-        const lease10 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+        const lease10 = await lease(lessee_1.address, 1, "2022-08-17", "2022-09-01", lessee_agent);
     }
     catch(e){
         console.log(e);
     }
     // Lessee_1 issues sublet to lessee_2 (LESSEE_2 + LESSEE_1) 
     try{
-        console.log("------Trying to sublet to lessee_2 as lessee_1-> should pass"); // --- maybe this should fail since lessee_2 was the lessee for the period?
-        const lease11 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_1);
+        console.log("------Trying to sublet to lessee_2 as lessee_1-> should pass"); 
+        const lease11 = await lease(lessee_2.address, 1, "2022-08-02", "2022-08-15", lessee_1);
         console.log("------Trying to sublet to lessee_1 as lessee_1-> should fail as its sublet to lessee_2");
-        const sublet3 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_1);
+        const sublet3 = await lease(lessee_1.address, 1, "2022-08-02", "2022-08-15", lessee_1);
     }
     catch(e){
         console.log(e);
@@ -209,10 +212,10 @@ const main = async () => {
 
     // Lessee_1's agent issues sublet to lessee_2 (LESSEE_2 + LESSEE_agent)
     try{
-        console.log("------Trying to sublet to lessee_2 as lessee_1 agent-> should pass"); // --- maybe this should fail since lessee_2 was the lessee for the period?
-        const lease9 = await lease(lessee_2.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+        console.log("------Trying to sublet to lessee_2 as lessee_1 agent-> should pass"); 
+        const lease9 = await lease(lessee_2.address, 1, "2022-05-01", "2022-06-01", lessee_agent);
         console.log("------Trying to lease to lessee_1 as lessee_1 agent-> should fail as its sublet to lessee_2");
-        const lease10 = await lease(lessee_1.address, 1, "2022-08-02", "2022-09-01", lessee_agent);
+        const lease10 = await lease(lessee_1.address, 1, "2022-05-01", "2022-06-01", lessee_agent);
     }
     catch(e){
         console.log(e);
