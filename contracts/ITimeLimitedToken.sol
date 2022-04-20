@@ -206,7 +206,7 @@ interface ITimeLimitedToken {
     /// @param _owner is the address for whom to the lease belongs to
     /// @param _operator the address of a third party that can manage all the leases
     /// on behalf of the owner
-    function isLeaseApprovedForall(address _owner, address _operator)
+    function isLeaseApprovedForAll(address _owner, address _operator)
         external
         view
         returns (bool);

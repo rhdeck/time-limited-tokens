@@ -238,6 +238,26 @@ const App = () => {
     }
   };
 
+    const approve = async (id) => {
+    // let dates1 = Number(convertDate(formData.dateOne));
+    // let dates2 = Number(convertDate(formData.dateTwo));
+
+    let dates1 = convertDate(formData.dateOne);
+    let dates2 = convertDate(formData.dateTwo);
+
+    let dateStart = await instanceOne.TIME_START();
+    console.log("Date Start is : ", dateStart);
+    // dateStart = Number(dateStart);
+    // dates1 = Math.round((dates1 - dateStart) / 86400) + 1;
+    // dates2 = Math.round((dates2 - dateStart) / 86400) + 1;
+    console.log("will run lease: ", formData.wallet,id, dates1, dates2);
+    try {
+      await instanceOne.approveLease(formData.wallet,id, dates1, dates2);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
   const unlease = async (id) => {
 
     console.log("entering unlease");
@@ -257,6 +277,29 @@ const App = () => {
       console.log(err.message);
     }
   };
+
+    const approveforAll = async () => {
+
+    console.log("entering approveforAll");
+
+    try {
+      await instanceOne.setLeaseApprovalForAll(formData.wallet, true);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+      const unapproveforAll = async () => {
+
+    console.log("entering unapproveforAll");
+    
+    try {
+      await instanceOne.setLeaseApprovalForAll(formData.wallet, false);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+
 
   const unleaseTwo = async (id, dates1, dates2) => {
 
@@ -345,32 +388,55 @@ console.log(allLeases, " All leases")
                     className="w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
                     required
                   />
+                  <label className="mr-2 text-blue-900">Wallet Address (lease and approve only)</label>
+                  
+                  <input
+                    id="wallet"
+                    type="text"
+                    name="wallet"
+                    placeholder="Wallet Address"
+                    onChange={handleChange}
+                    className="inline-block w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
+                  />
+
                   <div className="flex justify-center">
-                    <button onClick={() => lease(token.id)} className="button">
-                      Lease
-                    </button>
+                  <button
+                    onClick={() => transferLease(token.id)}
+                    className="button inline-block"
+                  >
+                    Lease
+                  </button>
+
                     <button
                       onClick={() => unlease(token.id)}
                       className="button"
                     >
                       Unlease
                     </button>
+                    </div>
+                    <div className="flex justify-center">
+                    <button
+                      onClick={() => approve(token.id)}
+                      className="button"
+                    >
+                      Approve
+                    </button>
+                  
+                    <button
+                      onClick={() => approveforAll(token.id)}
+                      className="button"
+                    >
+                      Approve for All
+                    </button>
+                    <button
+                      onClick={() => unapproveforAll(token.id)}
+                      className="button"
+                    >
+                      Unapprove for All
+                    </button>
+
                   </div>
-                  <button
-                    onClick={() => transferLease(token.id)}
-                    className="button inline-block"
-                  >
-                    Transfer Lease To:
-                  </button>
-                  <input
-                    id="wallet"
-                    type="text"
-                    name="wallet"
-                    placeholder="Wallet Address 0x..."
-                    onChange={handleChange}
-                    className="inline-block w-full h-10 px-3 text-base text-gray-700 placeholder-gray-600 border rounded-lg focus:shadow-outline mb-2"
-                  />
-                </div>
+                  </div>
                 {allLeases[index].filter(lease => Number(lease.startTime)).map((leases, leaseIndex) => {
                   return (
                   <div onClick={async () => {

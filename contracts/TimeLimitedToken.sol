@@ -595,7 +595,7 @@ contract TimeLimitedToken is ERC721URIStorage, ITimeLimitedToken {
         emit LeaseApprovalForAll(msg.sender, _agent, _approved);
     }
 
-    function isLeaseApprovedForall(address _owner, address _agent)
+    function isLeaseApprovedForAll(address _owner, address _agent)
         external
         view
         override
