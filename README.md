@@ -26,10 +26,13 @@ See how it works
 We believe in abundance. We hope that this project can form an ERC standard to make time-slicing assets easier, and that the code here will give you a head start. Please use it, make it better, and let us know! 
 
 ## Team
-1. Naiyoma Aurelia ([@naiyoma](https://github.com/naiyoma))
-2. Ray Deck ([@rhdeck](https://github.com/rhdeck))
-3. Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja))
-4. Robert Reinhart ([@robertreinhart](https://github.com/robertreinhart))
-5. Radek Sienkiewicz ([@sabon](https://github.com/sabon))
+1. Ray Deck ([@rhdeck](https://github.com/rhdeck))
+2. Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja))
+3. Robert Reinhart ([@robertreinhart](https://github.com/robertreinhart))
+
+## Early Contributors
+1. Radek Sienkiewicz ([@sabon](https://github.com/sabon))
+2. Naiyoma Aurelia ([@naiyoma](https://github.com/naiyoma))
+
 ## Thanks
 This project got its start at the [Web3Con](https://web3con.dev) [Hackathon](https://web3con.dev/hackathon) put on by [Developer DAO](https://developerdao.com). Many thanks to them for putting this event together and giving us the chance to work on a fun, meaningful project for the web3 community! 
