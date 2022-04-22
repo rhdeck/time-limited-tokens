@@ -34,7 +34,7 @@ const main = async () => {
   console.log(
     "Deploy the contract------------------------------------------------------"
   );
-  const LeaseContract = await hre.ethers.getContractFactory("TimeLimitedToken");
+  const LeaseContract = await hre.ethers.getContractFactory("Web3Bnb");
   const leaseContract = await LeaseContract.deploy();
   await leaseContract.deployed();
   const gas = await leaseContract.deployTransaction;
